@@ -5,10 +5,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static './css/styles.css' %}"/>
-    <title>GraspEd</title>
+    <title>GraspEd | A platform for school students and teachers</title>
 </head>
 <body>
-    <h1>Hello world !</h1>
-    <img src="{% static './images/hero-image.png' %}" alt="">
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">
+                <span class="logo-img">
+                    <img src="{% static './images/GraspEd-logo-text.png' %}" alt="GraspEd Logo" height="32"/>
+                </span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+                <a href="/login" class="btn btn-login">Login</a>
+                <a href="/signup" class="btn btn-signup">Sign Up</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to GraspEd</h1>
+                <p class="hero-subtitle">The platform where students and teachers connect, collaborate, and learn together</p>
+                <div class="hero-buttons">
+                    <a href="/signup" class="btn btn-primary">Get Started</a>
+                    <a href="#features" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="{% static './images/hero-image.png' %}" alt="Students and teachers collaborating online">
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <h2>Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Easy Communication</h3>
+                    <p>Connect with teachers and students through our intuitive messaging system</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Resource Sharing</h3>
+                    <p>Share and access educational materials, assignments, and study resources</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Interactive Learning</h3>
+                    <p>Engage in discussions, group projects, and collaborative learning</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <h2>About GraspEd</h2>
+            <p>GraspEd is designed to bridge the gap between students and teachers, creating a seamless learning environment where everyone can thrive. Our platform makes it easy to communicate, share resources, and collaborate on educational goals.</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <span class="footer-logo">
+                    <img src="{% static './images/GraspEd-logo-text.png' %}" alt="GraspEd Logo" height="32"/>
+                </span>
+                <p>Empowering education through connection</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p>Email: nafilmnytfj@gmail.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 GraspEd. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>
