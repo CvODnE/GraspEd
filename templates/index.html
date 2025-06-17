@@ -4,11 +4,100 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static './css/styles.css' %}"/>
-    <title>GraspEd</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+    <link rel="icon" href="{% static 'images/favicon.png' %}" type="image/png">
+    <title>GraspEd - Your Learning Companion</title>
 </head>
 <body>
-    <h1>Hello</h1>
-    <img src="{% static './images/hero-image.png' %}" alt="">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="GraspEd Logo" class="logo">
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'attendance' %}" class="nav-link">Attendance</a>
+            <a href="{% url 'flashcards' %}" class="nav-link">Flashcards</a>
+            <a href="{% url 'quizzes' %}" class="nav-link">Quizzes</a>
+            <a href="{% url 'homework' %}" class="nav-link">Homework</a>
+            <a href="{% url 'community' %}" class="nav-link">Community</a>
+        </div>
+        <div class="nav-actions">
+            <a href="{% url 'notifications' %}" class="notification-link">
+                <i class="fas fa-bell"></i>
+                <span class="notification-count">3</span>
+            </a>
+            <a href="{% url 'profile' %}" class="btn btn-primary">Profile</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to GraspEd</h1>
+            <p>Your personal learning companion for academic success</p>
+            <div class="hero-buttons">
+                <a href="{% url 'dashboard' %}" class="btn btn-primary">Get Started</a>
+                <a href="{% url 'about' %}" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="{% static 'images/hero-images.jpg' %}" alt="GraspEd Hero Image">
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2>Why Choose GraspEd?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-book"></i>
+                <h3>Smart Learning</h3>
+                <p>Personalized learning paths tailored to your needs</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-users"></i>
+                <h3>Community</h3>
+                <p>Connect with peers and share knowledge</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-chart-line"></i>
+                <h3>Track Progress</h3>
+                <p>Monitor your learning journey with detailed analytics</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>GraspEd</h4>
+                <p>Making learning easier, one step at a time.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="{% url 'about' %}">About Us</a>
+                <a href="{% url 'contact' %}">Contact</a>
+                <a href="{% url 'privacy' %}">Privacy Policy</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect With Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 GraspEd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </body>
 </html>
