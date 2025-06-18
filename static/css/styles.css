@@ -79,6 +79,7 @@ body {
     height: 48px;
     vertical-align: middle;
     animation: logoPop 1s cubic-bezier(.68,-0.55,.27,1.55);
+    border-radius: 19px;
     transition: box-shadow 0.4s;
 }
 
