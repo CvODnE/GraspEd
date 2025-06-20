@@ -19,8 +19,8 @@
                 <a href="#features">Features</a>
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
-                <a href="/login" class="btn btn-login">Login</a>
-                <a href="/signup" class="btn btn-signup">Sign Up</a>
+                <a href= class="btn btn-login">Login</a>
+                <a href="#" class="btn btn-signup">Sign Up</a>
             </div>
         </nav>
     </header>
@@ -87,5 +87,170 @@
             <p>&copy; 2025 GraspEd. All rights reserved.</p>
         </div>
     </footer>
+    <!-- Sign Up Sidebar -->
+    <div id="signup-sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <span class="close-btn-circle" id="close-sidebar"><span class="close-btn">&times;</span></span>
+            <h2 id="sidebar-title">Create an Account</h2>
+            <div class="account-type-tabs" id="account-type-tabs">
+                <button class="tab-btn teacher-btn">Create Teacher Account</button>
+                <button class="tab-btn student-btn">Create Student Account</button>
+            </div>
+            <form id="signup-form" style="display:none; margin-top:2rem;">
+                <button type="button" id="back-to-tabs" style="margin-bottom:1.2rem;display:none;" class="btn btn-secondary back-icon-btn" aria-label="Back">&#8592;</button>
+                <div class="input-group">
+                    <input type="text" id="signup-username" name="username" required>
+                    <label for="signup-username">Username</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="signup-password" name="password" required>
+                    <label for="signup-password">Password</label>
+                    <span class="toggle-password" id="toggle-password" tabindex="0" aria-label="Show password">
+                        <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="signup-school" name="school_name" required>
+                    <label for="signup-school">School Name</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Create Account</button>
+            </form>
+        </div>
+    </div>
+    <script>
+    let selectedUserType = null;
+    document.querySelector('.btn-signup').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('signup-sidebar').classList.add('open');
+    });
+    document.getElementById('close-sidebar').addEventListener('click', function() {
+        document.getElementById('signup-sidebar').classList.remove('open');
+        // Reset sidebar to initial state
+        document.getElementById('account-type-tabs').style.display = 'flex';
+        document.getElementById('signup-form').style.display = 'none';
+        document.getElementById('sidebar-title').textContent = 'Create an Account';
+        document.getElementById('back-to-tabs').style.display = 'none';
+        selectedUserType = null;
+    });
+    window.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('signup-sidebar');
+        if (e.target === sidebar) {
+            sidebar.classList.remove('open');
+            // Reset sidebar to initial state
+            document.getElementById('account-type-tabs').style.display = 'flex';
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('sidebar-title').textContent = 'Create an Account';
+            document.getElementById('back-to-tabs').style.display = 'none';
+            selectedUserType = null;
+        }
+    });
+    // Handle account type button clicks
+    document.querySelector('.teacher-btn').addEventListener('click', function() {
+        document.getElementById('account-type-tabs').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'flex';
+        document.getElementById('sidebar-title').textContent = 'Create Teacher Account';
+        document.getElementById('back-to-tabs').style.display = 'inline-block';
+        selectedUserType = 'teacher';
+    });
+    document.querySelector('.student-btn').addEventListener('click', function() {
+        document.getElementById('account-type-tabs').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'flex';
+        document.getElementById('sidebar-title').textContent = 'Create Student Account';
+        document.getElementById('back-to-tabs').style.display = 'inline-block';
+        selectedUserType = 'student';
+    });
+    // Back button logic
+    document.getElementById('back-to-tabs').addEventListener('click', function() {
+        document.getElementById('signup-form').style.display = 'none';
+        document.getElementById('account-type-tabs').style.display = 'flex';
+        document.getElementById('sidebar-title').textContent = 'Create an Account';
+        document.getElementById('back-to-tabs').style.display = 'none';
+        selectedUserType = null;
+    });
+    // Show/hide password
+    const togglePassword = document.querySelector('#toggle-password');
+    const password = document.querySelector('#signup-password');
+    const eyeIcon = `<svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const eyeSlashIcon = `<svg id="eye-slash-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-5.94M1 1l22 22"/><path d="M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-5.47"/></svg>`;
+
+    togglePassword.addEventListener('click', function (e) {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? eyeIcon : eyeSlashIcon;
+        password.focus();
+    });
+
+    // Floating label effect: add 'filled' class if input has value
+    document.querySelectorAll('#signup-form input').forEach(function(input) {
+        input.addEventListener('blur', function() {
+            if (input.value) {
+                input.classList.add('filled');
+            } else {
+                input.classList.remove('filled');
+            }
+        });
+        // On page load, check if already filled
+        if (input.value) {
+            input.classList.add('filled');
+        }
+    });
+
+    // CSRF token helper for AJAX
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Handle signup form submission
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('signup-username').value;
+        const password = document.getElementById('signup-password').value;
+        const school_name = document.getElementById('signup-school').value;
+        if (!selectedUserType) {
+            alert('Please select account type.');
+            return;
+        }
+        const response = await fetch('/signup/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                school_name,
+                user_type: selectedUserType
+            })
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            alert('Account created successfully!');
+            document.getElementById('signup-sidebar').classList.remove('open');
+            // Optionally reset form and state
+            document.getElementById('signup-form').reset();
+            document.getElementById('account-type-tabs').style.display = 'flex';
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('sidebar-title').textContent = 'Create an Account';
+            document.getElementById('back-to-tabs').style.display = 'none';
+            selectedUserType = null;
+        } else {
+            alert(data.message || 'Error creating account.');
+        }
+    });
+    </script>
 </body>
 </html>
