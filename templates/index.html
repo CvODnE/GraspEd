@@ -20,6 +20,7 @@
                 <a href="#features">Features</a>
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
+                <a href="dashboard.html">Go to Dashboard</a>
                 <a href="#" class="btn btn-login">Login</a>
                 <a href="#" class="btn btn-signup">Sign Up</a>
             </div>
@@ -107,6 +108,7 @@
                     </span>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Login</button>
+                <button type="button" id="google-login-btn" class="btn btn-secondary" style="width:100%; margin-top:1rem; background:#fff; color:#e63038; border:1px solid #e63038;">Login with Google</button>
             </form>
         </div>
     </div>
@@ -141,6 +143,8 @@
             </form>
         </div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
     <script>
     let selectedUserType = null;
 
@@ -340,6 +344,34 @@
             alertDiv.innerText = 'Login failed. Please check your credentials.';
         }
     }
+
+    // Google Login Button Handler
+    document.getElementById('google-login-btn').addEventListener('click', function() {
+        // TODO: Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBAzGTsoyzb5Frvk79sx-ZRbbYyo0BSa8M",
+            authDomain: "grasped-cc60a.firebaseapp.com",
+            projectId: "grasped-cc60a",
+            storageBucket: "grasped-cc60a.firebasestorage.app",
+            messagingSenderId: "677296927248",
+            appId: "1:677296927248:web:3df7d489b00df16a735095",
+            measurementId: "G-MVRH4THFXR"
+
+        };
+        // Initialize Firebase only if not already initialized
+        if (!window.firebaseAppsInitialized) {
+            firebase.initializeApp(firebaseConfig);
+            window.firebaseAppsInitialized = true;
+        }
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+            .then(result => {
+                window.location.href = "dashboard.html";
+            })
+            .catch(error => {
+                alert("Google login failed: " + error.message);
+            });
+    });
     </script>
 </body>
 </html>
