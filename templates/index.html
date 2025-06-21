@@ -327,6 +327,19 @@
         return cookieValue;
     }
     const csrftoken = getCookie('csrftoken');
+
+    function showLoginAlert(success) {
+        var alertDiv = document.getElementById('login-alert');
+        if (success) {
+            alertDiv.style.display = 'block';
+            alertDiv.style.color = 'green';
+            alertDiv.innerText = 'Login successful!';
+        } else {
+            alertDiv.style.display = 'block';
+            alertDiv.style.color = 'red';
+            alertDiv.innerText = 'Login failed. Please check your credentials.';
+        }
+    }
     </script>
 </body>
 </html>
