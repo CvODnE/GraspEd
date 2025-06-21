@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
-from .models import StudentAccount, TeacherAccount
+from .models import StudentAccount, TeacherAccount, Class
 
 
 def index(request):
@@ -71,9 +71,42 @@ def teacher_dashboard_view(request):
     return render(request, "teacher_dashboard.html")
 
 @login_required
+def create_class_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        class_name = data.get('class_name')
+        password = data.get('password')
+        teacher_account = TeacherAccount.objects.get(user=request.user)
+        if Class.objects.filter(name=class_name).exists():
+            return JsonResponse({'status': 'error', 'message': 'Class name already exists.'}, status=400)
+        new_class = Class.objects.create(name=class_name, password=password, teacher=teacher_account)
+        return JsonResponse({'status': 'success', 'message': 'Class created successfully.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+@login_required
+def join_class_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        class_name = data.get('class_name')
+        password = data.get('password')
+        student_account = StudentAccount.objects.get(user=request.user)
+        try:
+            class_obj = Class.objects.get(name=class_name, password=password)
+        except Class.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Invalid class name or password.'}, status=400)
+        class_obj.students.add(student_account)
+        return JsonResponse({'status': 'success', 'message': 'Joined class successfully.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+@login_required
 def delete_account_view(request):
     if request.method == 'POST':
         request.user.delete()
         logout(request)
         return redirect('index')
+    return redirect('index')
+
+@login_required
+def logout_view(request):
+    logout(request)
     return redirect('index')

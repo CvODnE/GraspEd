@@ -4,154 +4,74 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Student Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .dashboard-hero { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-top: 3rem; animation: fadeInUp 1s; }
+    .dashboard-hero img { max-width: 320px; border-radius: 1.5rem; box-shadow: 0 8px 32px rgba(255,77,83,0.07); animation: float 3s infinite; }
+    .dashboard-content { max-width: 600px; }
+    .dashboard-form { background: #fff0f0; border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 24px rgba(230,57,70,0.08); margin-top: 2rem; animation: fadeIn 1.2s; }
+    .dashboard-form label { display: block; margin-bottom: 1rem; font-weight: 500; }
+    .dashboard-form input { width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #ff4d53; margin-top: 0.5rem; margin-bottom: 1rem; }
+    .dashboard-form button { margin-top: 1rem; }
+    .class-list { margin-top: 2rem; }
+    .class-card { background: #fff; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(230,57,70,0.08); padding: 1rem 1.5rem; margin-bottom: 1rem; animation: fadeInUp 0.8s; }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans">
-
-<div class="flex min-h-screen">
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white shadow-md p-6 space-y-4">
-    <h1 class="text-2xl font-bold text-blue-600">GraspEd</h1>
-    <nav class="space-y-2">
-      <button onclick="showSection('dashboard')" class="block w-full text-left text-gray-700 hover:text-blue-500">🏠 Dashboard</button>
-      <button onclick="showSection('settings')" class="block w-full text-left text-gray-700 hover:text-blue-500">⚙️ Settings</button>
-      <button onclick="showProfile()" class="block w-full text-left text-gray-700 hover:text-blue-500">👤 Profile</button>
+<body>
+  <header class="header" style="position:static; animation:fadeIn 1s;">
+    <nav class="nav">
+      <div class="logo-img">
+        <img src="/static/images/GraspEd-logo-text.png" alt="GraspEd Logo" height="40"/>
+      </div>
+      <div class="nav-links">
+        <span style="color:#e63038; font-weight:600;">Student Dashboard</span>
+        <a href="/logout/" class="btn btn-secondary" style="margin-left:1.5rem;">Log Out</a>
+      </div>
     </nav>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 p-6">
-    <!-- Dashboard Section -->
-    <section id="dashboard" class="section">
-      <h2 class="text-2xl font-semibold mb-4">🎓 Student Dashboard</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-6 rounded-xl shadow">
-          <h3 class="text-lg font-medium">Today's Classes</h3>
-          <ul class="list-disc ml-5 text-gray-600">
-            <li>Math - 9:00 AM</li>
-            <li>English - 11:00 AM</li>
-          </ul>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow">
-          <h3 class="text-lg font-medium">Assignments</h3>
-          <ul class="list-disc ml-5 text-gray-600">
-            <li>Science Project – Due 25 Jun</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Settings Section -->
-    <section id="settings" class="section hidden">
-      <h2 class="text-2xl font-semibold mb-4">⚙️ Settings</h2>
-      <div class="bg-white p-6 rounded-xl shadow space-y-6">
-        <!-- Theme -->
-        <div>
-          <label class="block font-medium mb-1">🌓 Theme</label>
-          <select id="theme" class="w-full border rounded p-2">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </div>
-
-        <!-- Notifications -->
-        <div>
-          <label class="block font-medium mb-1">🔔 Notifications</label>
-          <select id="notifications" class="w-full border rounded p-2">
-            <option value="enabled">Enabled</option>
-            <option value="disabled">Disabled</option>
-          </select>
-        </div>
-
-        <!-- Language -->
-        <div>
-          <label class="block font-medium mb-1">🗣 Language</label>
-          <select id="language" class="w-full border rounded p-2">
-            <option value="en">English</option>
-            <option value="ml">Malayalam</option>
-            <option value="hi">Hindi</option>
-          </select>
-        </div>
-
-        <!-- Weekly Summary -->
-        <div>
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" id="weeklySummary" class="accent-blue-600">
-            <span>📅 Send weekly summary email</span>
+  </header>
+  <main style="padding:2rem; max-width:1100px; margin:0 auto;">
+    <div class="dashboard-hero">
+      <div class="dashboard-content">
+        <h1 style="font-size:2.5rem; color:#e63038; font-weight:800; margin-bottom:0.5rem; animation:fadeInUp 1.2s;">Welcome, Student!</h1>
+        <p style="font-size:1.2rem; color:#444; margin-bottom:1.5rem; animation:fadeIn 1.5s;">Join your class using the class name and password provided by your teacher.</p>
+        <form id="join-class-form" class="dashboard-form">
+          <label>Class Name:
+            <input type="text" name="class_name" required placeholder="e.g. Physics 101">
           </label>
-        </div>
-
-        <!-- Save -->
-        <button onclick="saveSettings()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          💾 Save Settings
-        </button>
-      </div>
-    </section>
-  </main>
-</div>
-
-<!-- Profile Modal Fullscreen -->
-<div id="profileModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
-  <div class="bg-white w-full h-full max-w-4xl p-10 rounded-none shadow-xl overflow-auto relative">
-    <button onclick="closeProfile()" class="absolute top-6 right-6 text-2xl text-gray-500 hover:text-black">✖</button>
-
-    <div class="flex flex-col items-center justify-center mt-10">
-      <img src="https://i.pravatar.cc/200?img=5" class="rounded-full w-40 h-40 mb-6 border-4 border-blue-500">
-      <h3 class="text-3xl font-bold">Rajeev Kumar</h3>
-      <p class="text-gray-500 text-xl mb-6">@raj_kumar</p>
-
-      <div class="flex justify-center gap-10 text-center mb-10">
-        <div>
-          <p class="text-2xl font-bold text-black">230</p>
-          <p class="text-gray-600">Followers</p>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-black">180</p>
-          <p class="text-gray-600">Following</p>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-black">24</p>
-          <p class="text-gray-600">Posts</p>
+          <label>Password:
+            <input type="password" name="password" required placeholder="Class password">
+          </label>
+          <button type="submit" class="btn btn-primary">Join Class</button>
+        </form>
+        <div id="join-class-message" style="margin-top:1rem;"></div>
+        <div class="class-list">
+          <h3 style="margin-bottom:0.5rem;">Your Classes</h3>
+          <div class="class-card">(Joined classes will appear here soon...)</div>
         </div>
       </div>
-
-      <div class="w-full max-w-lg">
-        <p class="text-gray-700 text-center text-base">
-          🌟 Enthusiastic learner, passionate about tech & nature. Exploring the world of AI with GraspEd.
-        </p>
-      </div>
+      <img src="/static/images/teacher&student.png" alt="Teacher and Student" />
     </div>
-  </div>
-</div>
-
-<!-- Scripts -->
-<script>
-  function showSection(id) {
-    document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-  }
-
-  function showProfile() {
-    document.getElementById('profileModal').classList.remove('hidden');
-  }
-
-  function closeProfile() {
-    document.getElementById('profileModal').classList.add('hidden');
-  }
-
-  function saveSettings() {
-    const theme = document.getElementById('theme').value;
-    const notifications = document.getElementById('notifications').value;
-    const language = document.getElementById('language').value;
-    const weekly = document.getElementById('weeklySummary').checked;
-
-    alert(`✅ Settings Saved:
-- Theme: ${theme}
-- Notifications: ${notifications}
-- Language: ${language}
-- Weekly Summary: ${weekly ? 'Yes' : 'No'}`);
-  }
-</script>
-
+  </main>
+  <script>
+  document.getElementById('join-class-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const class_name = this.class_name.value;
+    const password = this.password.value;
+    const resp = await fetch('/student/join_class/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({class_name, password})
+    });
+    const data = await resp.json();
+    if (data.status === 'success') {
+      Swal.fire({icon:'success',title:'Joined!',text:data.message,timer:1800,showConfirmButton:false});
+      this.reset();
+    } else {
+      Swal.fire({icon:'error',title:'Error',text:data.message || 'Unknown error'});
+    }
+    document.getElementById('join-class-message').innerText = data.message || '';
+  };
+  </script>
 </body>
 </html>

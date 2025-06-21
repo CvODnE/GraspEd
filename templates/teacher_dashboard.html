@@ -4,9 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      .dashboard-hero { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-top: 3rem; animation: fadeInUp 1s; }
+      .dashboard-hero img { max-width: 320px; border-radius: 1.5rem; box-shadow: 0 8px 32px rgba(255,77,83,0.07); animation: float 3s infinite; }
+      .dashboard-content { max-width: 600px; }
+      .dashboard-form { background: #fff0f0; border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 24px rgba(230,57,70,0.08); margin-top: 2rem; animation: fadeIn 1.2s; }
+      .dashboard-form label { display: block; margin-bottom: 1rem; font-weight: 500; }
+      .dashboard-form input { width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #ff4d53; margin-top: 0.5rem; margin-bottom: 1rem; }
+      .dashboard-form button { margin-top: 1rem; }
+      .class-list { margin-top: 2rem; }
+      .class-card { background: #fff; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(230,57,70,0.08); padding: 1rem 1.5rem; margin-bottom: 1rem; animation: fadeInUp 0.8s; }
+    </style>
 </head>
 <body>
-    <h1>Welcome, Teacher!</h1>
-    <p>This is your dashboard.</p>
+    <header class="header" style="position:static; animation:fadeIn 1s;">
+        <nav class="nav">
+            <div class="logo-img">
+                <img src="/static/images/GraspEd-logo-text.png" alt="GraspEd Logo" height="40"/>
+            </div>
+            <div class="nav-links">
+                <span style="color:#e63038; font-weight:600;">Teacher Dashboard</span>
+                <a href="/logout/" class="btn btn-secondary" style="margin-left:1.5rem;">Log Out</a>
+            </div>
+        </nav>
+    </header>
+    <main style="padding:2rem; max-width:1100px; margin:0 auto;">
+        <div class="dashboard-hero">
+            <div class="dashboard-content">
+                <h1 style="font-size:2.5rem; color:#e63038; font-weight:800; margin-bottom:0.5rem; animation:fadeInUp 1.2s;">Welcome, Teacher!</h1>
+                <p style="font-size:1.2rem; color:#444; margin-bottom:1.5rem; animation:fadeIn 1.5s;">Create and manage your classes. Empower your students to join and learn together!</p>
+                <form id="create-class-form" class="dashboard-form">
+                    <label>Class Name:
+                        <input type="text" name="class_name" required placeholder="e.g. Physics 101">
+                    </label>
+                    <label>Password:
+                        <input type="password" name="password" required placeholder="Class password">
+                    </label>
+                    <button type="submit" class="btn btn-primary">Create Class</button>
+                </form>
+                <div id="create-class-message" style="margin-top:1rem;"></div>
+                <div class="class-list">
+                    <h3 style="margin-bottom:0.5rem;">Your Classes</h3>
+                    <div class="class-card">(Class list coming soon...)</div>
+                </div>
+            </div>
+            <img src="/static/images/teacher&student.png" alt="Teacher and Student" />
+        </div>
+    </main>
+    <script>
+    document.getElementById('create-class-form').onsubmit = async function(e) {
+        e.preventDefault();
+        const class_name = this.class_name.value;
+        const password = this.password.value;
+        const resp = await fetch('/teacher/create_class/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({class_name, password})
+        });
+        const data = await resp.json();
+        if (data.status === 'success') {
+            Swal.fire({icon:'success',title:'Class Created!',text:data.message,timer:1800,showConfirmButton:false});
+            this.reset();
+        } else {
+            Swal.fire({icon:'error',title:'Error',text:data.message || 'Unknown error'});
+        }
+        document.getElementById('create-class-message').innerText = data.message || '';
+    };
+    </script>
 </body>
 </html>
