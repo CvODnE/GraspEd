@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Notes</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .notes-section { margin-top: 3rem; }
+    .notes-section h3 { color: #e63038; display: flex; align-items: center; gap: 0.7rem; font-size: 1.5rem; font-weight: 700; }
+    .note-image-thumb { max-width: 120px; max-height: 90px; border-radius: 0.5rem; box-shadow: 0 2px 8px #e6303820; margin-top: 0.5rem; cursor: pointer; }
+    .uploaded-note-card { margin-bottom: 1.2rem; background: linear-gradient(135deg,#fff0f0 0%,#f9f9f9 100%); border-radius: 0.8rem; box-shadow: 0 2px 8px rgba(230,57,70,0.07); padding: 1rem 1.2rem; }
+    .uploaded-note-card:hover { box-shadow: 0 8px 32px #e6303840; transform: translateY(-2px) scale(1.025); }
+    .note-meta { font-size: 1.05rem; color: #e63038; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .note-text { margin: 0.7rem 0 0.3rem 0; color: #333; font-size: 1.08rem; display: flex; align-items: center; gap: 0.5rem; }
+    .note-file-link { color: #e63038; font-weight: 500; display: inline-block; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+  </style>
+</head>
+<body>
+  <header class="header" style="position:static; animation:fadeIn 1s;">
+    <nav class="nav">
+      <div class="logo-img">
+        <img src="/static/images/GraspEd-logo-text.png" alt="GraspEd Logo" height="40"/>
+      </div>
+      <div class="nav-links">
+        <span style="color:#e63038; font-weight:600;">Student Notes</span>
+        <a href="/student/dashboard/" class="btn btn-secondary" style="margin-left:1.5rem;">Back to Dashboard</a>
+      </div>
+    </nav>
+  </header>
+  <main style="padding:2rem; max-width:1100px; margin:0 auto;">
+    <div class="notes-section">
+      <h3>
+        <span style="width:1.7rem; height:1.7rem; display:inline-block; vertical-align:middle;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5V6.75C4 5.50736 5.00736 4.5 6.25 4.5H17.75C18.9926 4.5 20 5.50736 20 6.75V19.5" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19.5H20" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8.25H15" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        Class Notes
+      </h3>
+      <div id="notes-container" style="margin-top:1rem;"></div>
+    </div>
+  </main>
+  <script>
+    async function loadStudentNotes() {
+      try {
+        // First check if student has joined any classes
+        const classesResp = await fetch('/student/get_classes/');
+        const classesData = await classesResp.json();
+        
+        console.log('Classes data:', classesData); // Debug log
+        
+        if (!classesData.classes || classesData.classes.length === 0) {
+          document.getElementById('notes-container').innerHTML = '<p style="color:#e63038; font-weight:600;">Join a class to see notes from your teachers!</p>';
+          return;
+        }
+        
+        // Fetch all notes for all joined classes using the secure endpoint
+        const notesResponse = await fetch('/student/get_notes/');
+        const notesData = await notesResponse.json();
+        
+        console.log('Notes data:', notesData); // Debug log
+        
+        const container = document.getElementById('notes-container');
+        
+        if (notesData.status === 'success' && notesData.notes) {
+          if (notesData.notes.length === 0) {
+            container.innerHTML = '<p style="color:#666; font-style:italic;">No notes available yet from your teachers.</p>';
+            return;
+          }
+          
+          container.innerHTML = notesData.notes.map(note => {
+            let filePreview = '';
+            if (note.file_url && note.file_name && /\.(jpg|jpeg|png|gif)$/i.test(note.file_name)) {
+              filePreview = `<img src='${note.file_url}' alt='Note Image' class='note-image-thumb' onclick='showImageModal("${note.file_url}")'>`;
+            } else if (note.file_url) {
+              filePreview = `<a href='${note.file_url}' target='_blank' class='note-file-link'><span style='width:1.1rem; height:1.1rem; display:inline-block;'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='4' width='16' height='16' rx='2' stroke='#e63038' stroke-width='2'/><path d='M8 8H16V16H8V8Z' fill='#e63038' fill-opacity='0.15'/></svg></span> ${note.file_name}</a>`;
+            }
+            return `
+              <div class='uploaded-note-card'>
+                <div class='note-meta'>
+                  <span style="width:1.2rem; height:1.2rem; display:inline-block; vertical-align:middle;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="#e63038" stroke-width="2"/><path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#e63038" stroke-width="2"/></svg>
+                  </span>
+                  <span>${note.teacher || ''}</span>
+                  <span style='color:#888; font-weight:400; margin-left:0.7rem; font-size:0.98rem;'>${note.created_at || ''}</span>
+                  <span style='color:#e63038; font-weight:500; margin-left:0.7rem; font-size:0.98rem;'>${note.class_name}</span>
+                </div>
+                ${note.text ? `<div class='note-text'><span style='width:1.1rem; height:1.1rem; display:inline-block;'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='4' width='16' height='16' rx='2' stroke='#e63038' stroke-width='2'/><path d='M8 10H16' stroke='#e63038' stroke-width='2' stroke-linecap='round'/><path d='M8 14H12' stroke='#e63038' stroke-width='2' stroke-linecap='round'/></svg></span> ${note.text}</div>` : ''}
+                ${filePreview}
+              </div>
+            `;
+          }).join('');
+          
+          // Lightbox modal for image preview
+          if (!document.getElementById('note-image-modal')) {
+            const modal = document.createElement('div');
+            modal.id = 'note-image-modal';
+            modal.style = 'display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;';
+            modal.innerHTML = `<img id='note-image-modal-img' style='max-width:90vw; max-height:80vh; border-radius:1rem; box-shadow:0 8px 32px #0008;'><span style='position:absolute;top:2rem;right:2rem;font-size:2.5rem;color:#fff;cursor:pointer;' onclick='document.getElementById(\'note-image-modal\').style.display=\'none\''>&times;</span>`;
+            document.body.appendChild(modal);
+          }
+          window.showImageModal = function(url) {
+            document.getElementById('note-image-modal-img').src = url;
+            document.getElementById('note-image-modal').style.display = 'flex';
+          };
+        } else {
+          container.innerHTML = '<p style="color:#666; font-style:italic;">No notes available yet from your teachers.</p>';
+        }
+      } catch (error) {
+        console.error('Error loading notes:', error);
+        document.getElementById('notes-container').innerHTML = '<p style="color:#e63038;">Error loading notes. Please try refreshing the page.</p>';
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadStudentNotes);
+  </script>
+</body>
+</html> 

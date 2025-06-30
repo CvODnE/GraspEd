@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Role - GraspEd</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .selection-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fff0f0 0%, #fff 100%);
+            padding: 2rem;
+        }
+        .selection-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(255,77,83,0.1);
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            animation: fadeInUp 1s ease;
+        }
+        .selection-logo {
+            margin-bottom: 2rem;
+            animation: logoPop 1s ease;
+        }
+        .selection-logo img {
+            height: 60px;
+            border-radius: 12px;
+        }
+        .selection-title {
+            font-size: 2rem;
+            color: #e63038;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 1.2s ease;
+        }
+        .selection-subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            animation: fadeIn 1.5s ease;
+        }
+        .role-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1.8s ease;
+        }
+        .role-option {
+            background: #fff;
+            border: 2px solid #e1e5e9;
+            border-radius: 1rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .role-option:hover {
+            border-color: #e63038;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(230,48,56,0.15);
+        }
+        .role-option.selected {
+            border-color: #e63038;
+            background: #fff0f0;
+        }
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .role-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .role-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .school-input {
+            margin-bottom: 2rem;
+            animation: fadeInUp 2.2s ease;
+        }
+        .school-input label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+            text-align: left;
+        }
+        .school-input input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .school-input input:focus {
+            outline: none;
+            border-color: #e63038;
+            box-shadow: 0 0 0 3px rgba(230,48,56,0.1);
+        }
+        .continue-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(45deg, #ff4d53 0%, #ff7a80 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: fadeInUp 2.4s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .continue-btn.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .continue-btn.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(230,48,56,0.3);
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes logoPop {
+            0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+            60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0); }
+        }
+        @media (max-width: 768px) {
+            .role-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="selection-container">
+        <div class="selection-card">
+            <div class="selection-logo">
+                <img src="/static/images/GraspEd-logo-text.png" alt="GraspEd Logo" />
+            </div>
+            
+            <h1 class="selection-title">Welcome to GraspEd!</h1>
+            <p class="selection-subtitle">Please select your role to continue</p>
+
+            <div class="role-options">
+                <div class="role-option" data-role="teacher">
+                    <div class="role-icon">👨‍🏫</div>
+                    <div class="role-title">Teacher</div>
+                    <div class="role-description">Create classes, manage students, and share resources</div>
+                </div>
+                <div class="role-option" data-role="student">
+                    <div class="role-icon">👨‍🎓</div>
+                    <div class="role-title">Student</div>
+                    <div class="role-description">Join classes, access materials, and collaborate with peers</div>
+                </div>
+            </div>
+
+            <div class="school-input">
+                <label for="school-name">School Name</label>
+                <input type="text" id="school-name" placeholder="Enter your school name" required>
+            </div>
+
+            <button class="continue-btn" id="continue-btn">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = null;
+
+        // Handle role selection
+        document.querySelectorAll('.role-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Store selected role
+                selectedRole = this.dataset.role;
+                
+                // Enable continue button
+                document.getElementById('continue-btn').classList.add('active');
+            });
+        });
+
+        // Handle continue button
+        document.getElementById('continue-btn').addEventListener('click', async function() {
+            if (!selectedRole) {
+                Swal.fire('Please select a role', 'Choose whether you are a teacher or student', 'warning');
+                return;
+            }
+
+            const schoolName = document.getElementById('school-name').value.trim();
+            if (!schoolName) {
+                Swal.fire('School name required', 'Please enter your school name', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/set-user-type/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        user_type: selectedRole,
+                        school_name: schoolName
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    Swal.fire({
+                        title: 'Welcome!',
+                        text: `You have been registered as a ${selectedRole}. Redirecting to your dashboard...`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = data.redirect_url;
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'Something went wrong', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Network error. Please try again.', 'error');
+            }
+        });
+
+        // CSRF token helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html> 

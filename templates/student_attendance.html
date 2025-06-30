@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Attendance</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    .attendance-container {
+      max-width: 500px;
+      margin: 3rem auto;
+      background: #fff0f0;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px #e6303820;
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .attendance-title {
+      color: #e63038;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 2rem;
+    }
+    .attendance-form button {
+      font-size: 1.1rem;
+      padding: 0.8rem 1.2rem;
+      border-radius: 0.8rem;
+      background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s, box-shadow 0.3s;
+      margin-top: 1.2rem;
+    }
+    .attendance-form button:hover {
+      background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%);
+      box-shadow: 0 6px 24px #e6303840;
+      transform: scale(1.03);
+    }
+    .empty-state {
+      color: #999;
+      font-size: 1.1rem;
+      margin-top: 2rem;
+    }
+    .class-name {
+      color: #e63038;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .animated-logo {
+      animation: logo-bounce 2.2s cubic-bezier(.68,-0.55,.27,1.55) 0s 1;
+      animation-fill-mode: both;
+      transition: transform 0.35s cubic-bezier(.77,0,.18,1), filter 0.35s cubic-bezier(.77,0,.18,1);
+      cursor: pointer;
+    }
+    .animated-logo:hover {
+      animation: logo-hover-wiggle 0.7s cubic-bezier(.77,0,.18,1);
+      animation-fill-mode: both;
+      transform: scale(1.13) rotate(-4deg);
+      filter: brightness(1.18) saturate(1.15);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header (identical to dashboard) -->
+  <header style="width:100%; background:#fff; box-shadow:0 2px 12px rgba(230,57,70,0.07); display:flex; align-items:center; justify-content:space-between; padding:1.2rem 2.5rem 1.2rem 2.5rem; position:sticky; top:0; z-index:100;">
+    <div style="display:flex; align-items:center; gap:1.2rem;">
+      <!-- Hamburger Icon -->
+      <button id="hamburger-btn" style="background:none; border:none; cursor:pointer; padding:0; margin:0; display:flex; align-items:center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect y="5" width="24" height="2.5" rx="1.2" fill="#e63038"/>
+          <rect y="11" width="24" height="2.5" rx="1.2" fill="#e63038"/>
+          <rect y="17" width="24" height="2.5" rx="1.2" fill="#e63038"/>
+        </svg>
+      </button>
+      <img src="/static/images/GraspEd-logo-text.png" alt="GraspEd Logo" class="animated-logo" id="attendance-logo" style="height:2.5rem; width:auto; display:block;"/>
+    </div>
+    <button id="profile-btn" style="background:none; border:none; cursor:pointer; outline:none; padding:0; margin:0;">
+      <span style="display:inline-block; width:2.8rem; height:2.8rem; border-radius:50%; background:linear-gradient(135deg,#e63038,#ff7e5f); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px #e6303820;">
+        {% if profile_photo_url %}
+          <img src="{{ profile_photo_url }}" alt="Profile Photo" style="width:100%; height:100%; object-fit:cover; border-radius:50%; border: 1px solid #ffb3b3; box-sizing: border-box;"/>
+        {% else %}
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="#fff" stroke-width="2"/>
+            <path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#fff" stroke-width="2"/>
+          </svg>
+        {% endif %}
+      </span>
+    </button>
+  </header>
+  <!-- Sidebar overlay for hamburger menu -->
+  <div id="left-sidebar-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:2100;"></div>
+  <!-- Left Sidebar -->
+  <aside id="left-sidebar" style="position:fixed; top:0; left:-270px; width:250px; height:100vh; background:#fff; box-shadow:4px 0 32px #e6303820; z-index:2200; transition:left 0.35s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column; padding:2.5rem 1.2rem 1.2rem 1.2rem;">
+    <div style="font-size:1.3rem; font-weight:800; color:#e63038; margin-bottom:2.5rem; display:flex; align-items:center; gap:0.7rem;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="20" height="20" rx="6" fill="#fff0f0" stroke="#e63038" stroke-width="2"/>
+        <path d="M8 12h8M8 16h8M8 8h8" stroke="#e63038" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Menu
+    </div>
+    <nav style="display:flex; flex-direction:column; gap:1.2rem;">
+      <a href="/student/dashboard/" style="display:flex; align-items:center; gap:1rem; color:#e63038; font-weight:700; font-size:1.1rem; text-decoration:none; padding:0.7rem 1rem; border-radius:0.8rem; transition:background 0.2s;">
+        <span style="display:inline-flex; align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="7" width="18" height="13" rx="3" stroke="#e63038" stroke-width="2"/>
+            <rect x="7" y="3" width="10" height="4" rx="2" stroke="#e63038" stroke-width="2"/>
+          </svg>
+        </span>
+        Dashboard
+      </a>
+      <a href="/student/attendance/" style="display:flex; align-items:center; gap:1rem; color:#e63038; font-weight:700; font-size:1.1rem; text-decoration:none; padding:0.7rem 1rem; border-radius:0.8rem; transition:background 0.2s;">
+        <span style="display:inline-flex; align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="16" height="16" rx="4" stroke="#e63038" stroke-width="2"/>
+            <path d="M8 10h8M8 14h5" stroke="#e63038" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Attendance
+      </a>
+    </nav>
+  </aside>
+  <!-- Profile Sidebar (right) -->
+  <div id="profile-sidebar-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:2000;"></div>
+  <aside id="profile-sidebar" style="position:fixed; top:0; right:-350px; width:320px; height:100vh; background:#fff; box-shadow:-4px 0 32px #e6303820; z-index:2100; transition:right 0.35s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column; align-items:center; padding:3rem 2rem 2rem 2rem;">
+    <span id="profile-photo-container" style="display:block; width:5.5rem; height:5.5rem; border-radius:50%; background:linear-gradient(135deg,#e63038,#ff7e5f); display:flex; align-items:center; justify-content:center; margin-bottom:2.5rem; overflow:hidden;">
+      {% if user.studentaccount.profile_photo %}
+        <img id="profile-photo-img" src="{{ user.studentaccount.profile_photo.url }}" alt="Profile Photo" style="width:100%; height:100%; object-fit:cover; border-radius:50%; border: 1px solid #ffb3b3; box-sizing: border-box;"/>
+      {% else %}
+        <svg id="profile-photo-img" width="88" height="88" viewBox="0 0 24 24" fill="none" style="display:block; border-radius:50%; background:linear-gradient(135deg,#e63038,#ff7e5f);" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="4" stroke="#fff" stroke-width="2.5"/>
+          <path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#fff" stroke-width="2.5"/>
+        </svg>
+      {% endif %}
+    </span>
+    <input type="file" id="profile-photo-input" accept="image/*" style="display:none;"/>
+    <button id="change-photo-btn" style="width:100%; padding:0.8rem 0; background:linear-gradient(90deg, #ff7e5f 0%, #e63038 100%); color:#fff; border:none; border-radius:1.2rem; font-size:1.1rem; font-weight:700; cursor:pointer; margin-bottom:1.5rem; margin-top:-1rem; transition:all 0.3s;">Change Profile Photo</button>
+    {% if user.studentaccount.classes.all %}
+      <button id="leave-class-btn" style="width:100%; padding:0.8rem 0; background:#fff; color:#e63038; border:1.5px solid #e63038; border-radius:1.2rem; font-size:1.1rem; font-weight:700; cursor:pointer; margin-bottom:1.5rem; margin-top:0.5rem; transition:all 0.3s;">Leave Class</button>
+    {% endif %}
+    <button onclick="confirmLogout()" style="width:100%; padding:1.2rem; background:linear-gradient(90deg, #e63038 0%, #ff7e5f 100%); color:#fff; border:none; border-radius:1.2rem; font-size:1.3rem; font-weight:700; cursor:pointer; box-shadow:0 6px 20px rgba(230,57,70,0.13); margin-top:2rem; display:flex; align-items:center; justify-content:center; gap:1rem; transition:all 0.3s; text-transform:uppercase; letter-spacing:1px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 17L21 12L16 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 12H9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 19C7.58 19 4 15.42 4 11C4 6.58 7.58 3 12 3C13.85 3 15.55 3.63 16.88 4.69" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Log Out
+    </button>
+  </aside>
+  <main>
+    <div class="attendance-container">
+      <div class="attendance-title">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; margin-right:0.5rem;">
+          <rect x="4" y="4" width="16" height="16" rx="4" stroke="#e63038" stroke-width="2"/>
+          <path d="M8 10h8M8 14h5" stroke="#e63038" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Take Attendance in Classroom
+      </div>
+      {% if joined_class %}
+        <div class="class-name">{{ joined_class.name }}</div>
+        <form class="attendance-form" method="post" action="#">
+          {% csrf_token %}
+          <button type="submit">Take Attendance</button>
+        </form>
+      {% else %}
+        <div class="empty-state">
+          You have not joined any classes yet.<br>
+          Please join a class to take attendance.
+        </div>
+      {% endif %}
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+  // Hamburger menu logic (same as dashboard)
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const leftSidebar = document.getElementById('left-sidebar');
+  const leftSidebarOverlay = document.getElementById('left-sidebar-overlay');
+  hamburgerBtn.onclick = function() {
+    leftSidebar.style.left = '0';
+    leftSidebarOverlay.style.display = 'block';
+  };
+  leftSidebarOverlay.onclick = function() {
+    leftSidebar.style.left = '-270px';
+    leftSidebarOverlay.style.display = 'none';
+  };
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      leftSidebar.style.left = '-270px';
+      leftSidebarOverlay.style.display = 'none';
+    }
+  });
+  // Profile sidebar logic
+  document.getElementById('profile-btn').onclick = function() {
+    document.getElementById('profile-sidebar').style.right = '0';
+    document.getElementById('profile-sidebar-overlay').style.display = 'block';
+  };
+  document.getElementById('profile-sidebar-overlay').onclick = function() {
+    document.getElementById('profile-sidebar').style.right = '-350px';
+    document.getElementById('profile-sidebar-overlay').style.display = 'none';
+  };
+  // Leave class logic (SweetAlert)
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  document.getElementById('leave-class-btn')?.addEventListener('click', function() {
+    Swal.fire({
+      title: 'Leave Class?',
+      text: 'Are you sure you want to leave this class? You will lose access to its notes and attendance.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e63038',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, Leave',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch('/student/leave_class/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            Swal.fire({
+              icon: 'success',
+              title: 'Left Class',
+              text: data.message,
+              confirmButtonColor: '#e63038',
+              timer: 1800,
+              showConfirmButton: false
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#e63038'
+            });
+          }
+        });
+      }
+    });
+  });
+  // Logo animation retrigger on load only
+  const logo = document.getElementById('attendance-logo');
+  if (logo) {
+    logo.classList.remove('animated-logo');
+    void logo.offsetWidth;
+    logo.classList.add('animated-logo');
+    // Do NOT toggle the class on hover; let :hover handle the animation
+  }
+  </script>
+</body>
+</html> 
