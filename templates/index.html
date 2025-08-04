@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+{% load static %}
+{% load socialaccount %}
+
+{% block content %}
+    <!-- Add SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">
+                <span class="logo-img">
+                    <img src="{% static 'images/GraspEd-logo-text.png' %}" alt="GraspEd Logo" height="32"/>
+                </span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+                <a href="dashboard.html"></a>
+                <a href="#" class="btn btn-login">Login</a>
+                <a href="#" class="btn btn-signup">Sign Up</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to GraspEd</h1>
+                <p class="hero-subtitle">The platform where students and teachers connect, collaborate, and learn together</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary btn-get-started">Get Started</a>
+                    <a href="#features" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="{% static './images/teacher&student.png' %}" alt="Students and teachers collaborating online">
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <h2>Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Easy Communication</h3>
+                    <p>Connect with teachers and students through our intuitive messaging system</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Resource Sharing</h3>
+                    <p>Share and access educational materials, assignments, and study resources</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Interactive Learning</h3>
+                    <p>Engage in discussions, group projects, and collaborative learning</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <h2>About GraspEd</h2>
+            <p>GraspEd is designed to bridge the gap between students and teachers, creating a seamless learning environment where everyone can thrive. Our platform makes it easy to communicate, share resources, and collaborate on educational goals.</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <span class="footer-logo">
+                    <img src="{% static './images/GraspEd-logo-text.png' %}" alt="GraspEd Logo" height="32"/>
+                </span>
+                <p>Empowering education through connection</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p>Email: nafilmnytfj@gmail.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 GraspEd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Login Sidebar -->
+    <div id="login-sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <span class="close-btn-circle" id="close-login-sidebar"><span class="close-btn">&times;</span></span>
+            <h2>Login to Your Account</h2>
+            <form id="login-form" style="margin-top:2rem;">
+                <div class="input-group">
+                    <input type="text" id="login-username" name="username" required>
+                    <label for="login-username">Username</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" name="password" required>
+                    <label for="login-password">Password</label>
+                    <span class="toggle-password" id="toggle-login-password" tabindex="0" aria-label="Show password">
+                        <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Login</button>
+                <a href="{% provider_login_url 'google' %}" class="btn btn-secondary" style="width:100%; margin-top:1rem; background:#fff; color:#e63038; border:1px solid #e63038; display:inline-block; text-align:center;">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" style="height:20px;vertical-align:middle;margin-right:8px;">
+                    Continue with Google
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Sidebar -->
+    <div id="signup-sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <span class="close-btn-circle" id="close-sidebar"><span class="close-btn">&times;</span></span>
+            <h2 id="sidebar-title">Create an Account</h2>
+            <div class="account-type-tabs" id="account-type-tabs">
+                <button class="tab-btn teacher-btn">Create Teacher Account</button>
+                <button class="tab-btn student-btn">Create Student Account</button>
+            </div>
+            <form id="signup-form" style="display:none; margin-top:2rem;">
+                <button type="button" id="back-to-tabs" style="margin-bottom:1.2rem;display:none;" class="btn btn-secondary back-icon-btn" aria-label="Back">&#8592;</button>
+                <div class="input-group">
+                    <input type="text" id="signup-username" name="username" required>
+                    <label for="signup-username">Username</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="signup-password" name="password" required>
+                    <label for="signup-password">Password</label>
+                    <span class="toggle-password" id="toggle-password" tabindex="0" aria-label="Show password">
+                        <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="signup-school" name="school_name" required>
+                    <label for="signup-school">School Name</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    let selectedUserType = null;
+
+    // Login sidebar logic
+    document.querySelector('.btn-login').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('login-sidebar').classList.add('open');
+    });
+
+    document.getElementById('close-login-sidebar').addEventListener('click', function() {
+        document.getElementById('login-sidebar').classList.remove('open');
+    });
+
+    window.addEventListener('click', function(e) {
+        const loginSidebar = document.getElementById('login-sidebar');
+        if (e.target === loginSidebar) {
+            loginSidebar.classList.remove('open');
+        }
+    });
+
+    // Signup sidebar logic
+    document.querySelectorAll('.btn-signup, .btn-get-started').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('signup-sidebar').classList.add('open');
+        });
+    });
+
+    document.getElementById('close-sidebar').addEventListener('click', function() {
+        document.getElementById('signup-sidebar').classList.remove('open');
+    });
+
+    window.addEventListener('click', function(e) {
+        const signupSidebar = document.getElementById('signup-sidebar');
+        if (e.target === signupSidebar) {
+            signupSidebar.classList.remove('open');
+        }
+    });
+
+    // Account type selection
+    document.querySelector('.teacher-btn').addEventListener('click', function() {
+        selectedUserType = 'teacher';
+        document.getElementById('account-type-tabs').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'block';
+        document.getElementById('back-to-tabs').style.display = 'block';
+        document.getElementById('sidebar-title').textContent = 'Create Teacher Account';
+    });
+
+    document.querySelector('.student-btn').addEventListener('click', function() {
+        selectedUserType = 'student';
+        document.getElementById('account-type-tabs').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'block';
+        document.getElementById('back-to-tabs').style.display = 'block';
+        document.getElementById('sidebar-title').textContent = 'Create Student Account';
+    });
+
+    document.getElementById('back-to-tabs').addEventListener('click', function() {
+        document.getElementById('account-type-tabs').style.display = 'flex';
+        document.getElementById('signup-form').style.display = 'none';
+        document.getElementById('back-to-tabs').style.display = 'none';
+        selectedUserType = null;
+    });
+
+    // Password toggle functionality
+    document.getElementById('toggle-login-password').addEventListener('click', function() {
+        const passwordInput = document.getElementById('login-password');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+        } else {
+            passwordInput.type = 'password';
+        }
+    });
+
+    document.getElementById('toggle-password').addEventListener('click', function() {
+        const passwordInput = document.getElementById('signup-password');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+        } else {
+            passwordInput.type = 'password';
+        }
+    });
+
+    // Form submissions
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        // Show loading state
+        Swal.fire({
+            title: 'Logging in...',
+            text: 'Please wait while we authenticate you.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const response = await fetch('/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                Swal.fire({
+                    title: 'Welcome Back!',
+                    text: 'Login successful! Redirecting to your dashboard...',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = data.redirect_url;
+                });
+            } else {
+                Swal.fire({
+                    title: 'Login Failed',
+                    text: data.message || 'Invalid username or password.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Connection Error',
+                text: 'Unable to connect to the server. Please check your internet connection and try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('signup-username').value;
+        const password = document.getElementById('signup-password').value;
+        const school = document.getElementById('signup-school').value;
+
+        if (!selectedUserType) {
+            Swal.fire({
+                title: 'Account Type Required',
+                text: 'Please select an account type (Teacher or Student).',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Show loading state
+        Swal.fire({
+            title: 'Creating Account...',
+            text: 'Please wait while we set up your account.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const response = await fetch('/signup/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ 
+                    username, 
+                    password, 
+                    school_name: school,
+                    user_type: selectedUserType 
+                })
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                Swal.fire({
+                    title: 'Account Created!',
+                    text: 'Your account has been created successfully. Please log in to continue.',
+                    icon: 'success',
+                    confirmButtonText: 'Login Now'
+                }).then(() => {
+                    document.getElementById('signup-sidebar').classList.remove('open');
+                    document.getElementById('login-sidebar').classList.add('open');
+                    // Clear the signup form
+                    document.getElementById('signup-form').reset();
+                    document.getElementById('account-type-tabs').style.display = 'flex';
+                    document.getElementById('signup-form').style.display = 'none';
+                    document.getElementById('back-to-tabs').style.display = 'none';
+                    selectedUserType = null;
+                });
+            } else {
+                Swal.fire({
+                    title: 'Signup Failed',
+                    text: data.message || 'Unable to create account. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Connection Error',
+                text: 'Unable to connect to the server. Please check your internet connection and try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    </script>
+{% endblock %}

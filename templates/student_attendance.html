@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Attendance</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    .attendance-container {
+      max-width: 500px;
+      margin: 3rem auto;
+      background: #fff0f0;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px #e6303820;
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .attendance-title {
+      color: #e63038;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 2rem;
+    }
+    .attendance-form button {
+      font-size: 1.1rem;
+      padding: 0.8rem 1.2rem;
+      border-radius: 0.8rem;
+      background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s, box-shadow 0.3s;
+      margin-top: 1.2rem;
+    }
+    .attendance-form button:hover {
+      background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%);
+      box-shadow: 0 6px 24px #e6303840;
+      transform: scale(1.03);
+    }
+    .empty-state {
+      color: #999;
+      font-size: 1.1rem;
+      margin-top: 2rem;
+    }
+    .class-name {
+      color: #e63038;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .animated-logo {
+      animation: logo-bounce 2.2s cubic-bezier(.68,-0.55,.27,1.55) 0s 1;
+      animation-fill-mode: both;
+      transition: transform 0.35s cubic-bezier(.77,0,.18,1), filter 0.35s cubic-bezier(.77,0,.18,1);
+      cursor: pointer;
+    }
+    .animated-logo:hover {
+      animation: logo-hover-wiggle 0.7s cubic-bezier(.77,0,.18,1);
+      animation-fill-mode: both;
+      transform: scale(1.13) rotate(-4deg);
+      filter: brightness(1.18) saturate(1.15);
+    }
+    /* Sidebar hamburger hover effect */
+    #left-sidebar, #left-sidebar nav a {
+      font-family: 'Poppins', sans-serif !important;
+    }
+    #left-sidebar nav a {
+      transition: color 0.2s, background 0.2s;
+    }
+    #left-sidebar nav a:hover {
+      color: #e63038 !important;
+      background: #fff0f0;
+    }
+    #left-sidebar nav a:hover svg *,
+    #left-sidebar nav a:focus svg * {
+      stroke: #e63038 !important;
+    }
+  </style>
+</head>
+<body>
+  {% with active_page='attendance' %}
+    {% include 'student_header_sidebar.html' %}
+  {% endwith %}
+  <main>
+    <div class="attendance-container">
+      <div class="attendance-title">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; margin-right:0.5rem;">
+          <rect x="4" y="4" width="16" height="16" rx="4" stroke="#e63038" stroke-width="2"/>
+          <path d="M8 10h8M8 14h5" stroke="#e63038" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Take Attendance in Classroom
+      </div>
+      {% if joined_class %}
+        <div class="class-name">{{ joined_class.name }}</div>
+        <form class="attendance-form" method="post" action="#">
+          {% csrf_token %}
+          <button type="submit">Take Attendance</button>
+        </form>
+        <button id="student-absent-btn" class="btn-absent">Notify Teacher I'm Absent Today</button>
+        <div id="student-attendance-history-section" style="margin-top:2.5rem;">
+          <h3 style="color:#e63038; font-size:1.2rem; font-weight:800; margin-bottom:1rem;">My Attendance History</h3>
+          <table id="student-attendance-history-table" style="width:100%; border-collapse:separate; border-spacing:1.5rem 0.7rem; background:transparent;">
+            <thead>
+              <tr style="background:#ffe5e5; color:#e63038; font-weight:700;">
+                <th style="padding:0.7rem;">Date</th>
+                <th style="padding:0.7rem;">Status</th>
+                <th style="padding:0.7rem;">Marked At</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          You have not joined any classes yet.<br>
+          Please join a class to take attendance.
+        </div>
+      {% endif %}
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+  // Hamburger menu logic (same as dashboard)
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const leftSidebar = document.getElementById('left-sidebar');
+  const leftSidebarOverlay = document.getElementById('left-sidebar-overlay');
+  hamburgerBtn.onclick = function() {
+    leftSidebar.style.left = '0';
+    leftSidebarOverlay.style.display = 'block';
+  };
+  leftSidebarOverlay.onclick = function() {
+    leftSidebar.style.left = '-270px';
+    leftSidebarOverlay.style.display = 'none';
+  };
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      leftSidebar.style.left = '-270px';
+      leftSidebarOverlay.style.display = 'none';
+    }
+  });
+  // Profile sidebar logic
+  document.getElementById('profile-btn').onclick = function() {
+    document.getElementById('profile-sidebar').style.right = '0';
+    document.getElementById('profile-sidebar-overlay').style.display = 'block';
+  };
+  document.getElementById('profile-sidebar-overlay').onclick = function() {
+    document.getElementById('profile-sidebar').style.right = '-350px';
+    document.getElementById('profile-sidebar-overlay').style.display = 'none';
+  };
+  // Leave class logic (SweetAlert)
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  document.getElementById('leave-class-btn')?.addEventListener('click', function() {
+    Swal.fire({
+      title: 'Leave Class?',
+      text: 'Are you sure you want to leave this class? You will lose access to its notes and attendance.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e63038',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, Leave',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch('/student/leave_class/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            Swal.fire({
+              icon: 'success',
+              title: 'Left Class',
+              text: data.message,
+              confirmButtonColor: '#e63038',
+              timer: 1800,
+              showConfirmButton: false
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#e63038'
+            });
+          }
+        });
+      }
+    });
+  });
+  // Logo animation retrigger on load only
+  const logo = document.getElementById('attendance-logo');
+  if (logo) {
+    logo.classList.remove('animated-logo');
+    void logo.offsetWidth;
+    logo.classList.add('animated-logo');
+    // Do NOT toggle the class on hover; let :hover handle the animation
+  }
+  // Take Attendance (Present) logic
+  document.querySelector('.attendance-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    fetch('/student/request_attendance/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ requested_status: 'present' })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        Swal.fire('Request Sent!', data.message, 'success');
+      } else {
+        Swal.fire('Error', data.message, 'error');
+      }
+    })
+    .catch(() => {
+      Swal.fire('Error', 'Network error. Please try again.', 'error');
+    });
+  });
+  // Absent (Leave) logic
+  document.getElementById('student-absent-btn')?.addEventListener('click', function() {
+    fetch('/student/request_attendance/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ requested_status: 'absent' })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        Swal.fire('Request Sent!', data.message, 'success');
+      } else {
+        Swal.fire('Error', data.message, 'error');
+      }
+    })
+    .catch(() => {
+      Swal.fire('Error', 'Network error. Please try again.', 'error');
+    });
+  function fetchStudentAttendanceHistory() {
+    fetch('/student/attendance_history/')
+      .then(r => r.json())
+      .then(data => {
+        const tbody = document.querySelector('#student-attendance-history-table tbody');
+        tbody.innerHTML = '';
+        if (data.status === 'success' && data.attendance.length) {
+          data.attendance.forEach(a => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${a.date}</td>
+              <td>${a.status.charAt(0).toUpperCase() + a.status.slice(1)}</td>
+              <td>${a.marked_at}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="3">No attendance records</td></tr>';
+        }
+      });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    fetchStudentAttendanceHistory();
+  });
+  </script>
+{% endblock %} 

@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teacher Attendance</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    .attendance-container {
+      background: linear-gradient(135deg, #fff0f0 0%, #fff 100%);
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px #e6303820;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      margin-top: 3rem;
+      animation: fadeInUp 1s;
+    }
+    .attendance-title {
+      color: #e63038;
+      font-size: 2.2rem;
+      font-weight: 900;
+      margin-bottom: 2rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+    }
+    .class-name {
+      color: #e63038;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.5px;
+    }
+    .attendance-table {
+      width: 100%;
+      border-collapse: separate !important;
+      border-spacing: 2.2rem 1.2rem !important;
+      margin-bottom: 2.2rem !important;
+      background: transparent;
+    }
+    .attendance-table th, .attendance-table td {
+      padding: 1.1rem 0.7rem;
+      background: #fff;
+      border-radius: 0.9rem;
+      box-shadow: 0 2px 8px #e6303810;
+      font-size: 1.08rem;
+    }
+    .attendance-table th {
+      background: #ffe5e5;
+      color: #e63038;
+      font-weight: 800;
+      border-bottom: 2px solid #e63038;
+    }
+    .attendance-table tr.request-row {
+      background: linear-gradient(90deg, #fffbe5 0%, #ffe5e5 100%);
+      box-shadow: 0 0 0 2px #ffb34740;
+      animation: fadeIn 0.7s;
+    }
+    .btn-status {
+      width: 100%;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 0.6rem;
+      padding: 0.5rem 0;
+      transition: background 0.2s, transform 0.2s;
+      cursor: pointer;
+      outline: none;
+    }
+    .btn-status.present-btn {
+      background: linear-gradient(90deg,#4caf50 0%,#81c784 100%);
+      color: #fff;
+    }
+    .btn-status.absent-btn {
+      background: linear-gradient(90deg,#e63038 0%,#ff7e5f 100%);
+      color: #fff;
+    }
+    .btn-status.selected {
+      box-shadow: 0 0 0 3px #e63038, 0 2px 8px #4caf5040;
+      outline: 2px solid #e63038;
+      filter: brightness(1.08);
+      font-weight: 900;
+      transform: scale(1.04);
+      z-index: 1;
+    }
+    .btn-status:hover {
+      filter: brightness(1.12);
+      transform: scale(1.07);
+    }
+    .approve-btn {
+      background: linear-gradient(90deg,#ffb347 0%,#e63038 100%);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      border-radius: 0.7rem;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 2px 8px #e6303840;
+    }
+    .approve-btn:hover {
+      background: linear-gradient(90deg,#e63038 0%,#ffb347 100%);
+      transform: scale(1.08);
+    }
+    .floating-action-bar {
+      position: fixed;
+      bottom: 2.2rem;
+      right: 2.2rem;
+      background: #fff0f0;
+      border-radius: 2rem;
+      box-shadow: 0 4px 24px #e6303820;
+      display: flex;
+      gap: 1.2rem;
+      padding: 0.7rem 1.5rem;
+      z-index: 2000;
+      align-items: center;
+      animation: fadeInUp 1.2s;
+    }
+    .floating-action-bar button {
+      font-size: 1.2rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 1.2rem;
+      padding: 0.7rem 1.5rem;
+      background: linear-gradient(90deg,#e63038 0%,#ffb347 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px #e6303840;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .floating-action-bar button:hover {
+      background: linear-gradient(90deg,#ffb347 0%,#e63038 100%);
+      transform: scale(1.08);
+    }
+    @media (max-width: 700px) {
+      .attendance-container { padding: 1.2rem 0.5rem; }
+      .attendance-title { font-size: 1.3rem; }
+      .floating-action-bar { right: 0.5rem; bottom: 0.5rem; padding: 0.5rem 0.7rem; }
+      .floating-action-bar button { font-size: 1rem; padding: 0.5rem 0.8rem; }
+      .attendance-table {
+        border-spacing: 0.5rem 0.7rem !important;
+      }
+      .attendance-table th, .attendance-table td {
+        padding: 0.7rem 0.3rem;
+      }
+    }
+    #pending-requests-section {
+      margin-bottom: 3rem !important;
+      margin-top: 3rem !important;
+    }
+    #attendance-summary-section {
+      margin-top: 4rem !important;
+      margin-bottom: 3rem !important;
+    }
+    /* Sidebar hamburger hover effect */
+    #left-sidebar, #left-sidebar nav a {
+      font-family: 'Poppins', sans-serif !important;
+    }
+    #left-sidebar nav a {
+      transition: color 0.2s, background 0.2s;
+    }
+    #left-sidebar nav a:hover {
+      color: #e63038 !important;
+      background: #fff0f0;
+    }
+    #left-sidebar nav a:hover svg *,
+    #left-sidebar nav a:focus svg * {
+      stroke: #e63038 !important;
+    }
+  </style>
+</head>
+<body>
+  {% with active_page='attendance' %}
+    {% include 'teacher_header_sidebar.html' %}
+  {% endwith %}
+  <!-- Main Content -->
+  <main style="padding:2rem; max-width:900px; margin:0 auto;">
+    <div class="attendance-container" style="background:#fff0f0; border-radius:1.5rem; box-shadow:0 8px 32px #e6303820; padding:2.5rem 2rem; text-align:center; margin-top:3rem;">
+      <div class="attendance-title" style="color:#e63038; font-size:2rem; font-weight:800; margin-bottom:2rem;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; margin-right:0.5rem;">
+          <rect x="4" y="4" width="16" height="16" rx="4" stroke="#e63038" stroke-width="2"/>
+          <path d="M8 10h8M8 14h5" stroke="#e63038" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Track Attendance
+      </div>
+      {% if class_obj and students %}
+        <div class="class-name" style="color:#e63038; font-size:1.3rem; font-weight:700; margin-bottom:1.5rem;">{{ class_obj.name }}</div>
+        <!-- Pending Requests Section -->
+        <div id="pending-requests-section" style="margin-bottom:2.5rem; margin-top:2.5rem;">
+          <h3 style="color:#e63038; font-size:1.1rem; font-weight:700; margin-bottom:0.7rem;">Pending Attendance Requests</h3>
+          <table class="attendance-table" id="pending-requests-table">
+            <thead>
+              <tr style="background:#ffe5e5; color:#e63038; font-weight:700;">
+                <th style="padding:0.7rem;">Student</th>
+                <th style="padding:0.7rem;">Requested Status</th>
+                <th style="padding:0.7rem;">Requested At</th>
+                <th style="padding:0.7rem;">Action</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <form id="teacher-attendance-form">
+          {% csrf_token %}
+          <table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">
+            <thead>
+              <tr style="background:#ffe5e5; color:#e63038; font-weight:700;">
+                <th style="padding:0.7rem; border-radius:0.5rem 0 0 0.5rem;">Student</th>
+                <th style="padding:0.7rem;">Present</th>
+                <th style="padding:0.7rem; border-radius:0 0.5rem 0.5rem 0;">Absent</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+              <tr class="student-row" data-student-id="{{ student.id }}" data-student-name="{{ student.user.username }}">
+                <td style="padding:0.7rem; text-align:left;">{{ student.user.username }}</td>
+                <td style="padding:0.7rem;">
+                  <button type="button" class="btn-status present-btn" data-status="present" style="width:100%; background:linear-gradient(90deg,#4caf50 0%,#81c784 100%); color:#fff; font-weight:700; border:none; border-radius:0.6rem; padding:0.5rem 0; transition:background 0.2s;">Present</button>
+                </td>
+                <td style="padding:0.7rem;">
+                  <button type="button" class="btn-status absent-btn" data-status="absent" style="width:100%; background:linear-gradient(90deg,#e63038 0%,#ff7e5f 100%); color:#fff; font-weight:700; border:none; border-radius:0.6rem; padding:0.5rem 0; transition:background 0.2s;">Absent</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <button type="submit" id="save-attendance-btn" class="btn btn-primary" style="width:100%; font-size:1.1rem;" disabled>Save Attendance</button>
+        </form>
+        <div id="attendance-summary-section" style="margin-top:3.5rem; margin-bottom:2.5rem;">
+          <h3 style="color:#e63038; font-size:1.3rem; font-weight:800; margin-bottom:1rem;">Attendance History</h3>
+          <table class="attendance-table" id="attendance-summary-table">
+            <thead>
+              <tr style="background:#ffe5e5; color:#e63038; font-weight:700;">
+                <th style="padding:0.7rem;">Student</th>
+                <th style="padding:0.7rem;">Status</th>
+                <th style="padding:0.7rem;">Date</th>
+                <th style="padding:0.7rem;">Marked At</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state" style="color:#999; font-size:1.1rem; margin-top:2rem;">
+          No class or students found.
+        </div>
+      {% endif %}
+    </div>
+  </main>
+  <script>
+    // Attendance marking logic (event delegation)
+    document.addEventListener('DOMContentLoaded', function() {
+      // Attendance marking logic
+      const attendanceTbody = document.querySelector('form#teacher-attendance-form tbody');
+      if (attendanceTbody) {
+        attendanceTbody.addEventListener('click', function(e) {
+          if (e.target.classList.contains('btn-status')) {
+            const btn = e.target;
+            const row = btn.closest('.student-row');
+            row.querySelectorAll('.btn-status').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            row.dataset.status = btn.dataset.status;
+            checkAllMarked();
+          }
+        });
+      }
+      function checkAllMarked() {
+        const rows = document.querySelectorAll('.student-row');
+        let allMarked = true;
+        rows.forEach(row => {
+          if (!row.dataset.status) allMarked = false;
+        });
+        document.getElementById('save-attendance-btn').disabled = !allMarked;
+      }
+      document.getElementById('teacher-attendance-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const rows = document.querySelectorAll('.student-row');
+        const data = [];
+        rows.forEach(row => {
+          const studentId = row.dataset.studentId;
+          const status = row.dataset.status;
+          data.push({ student_id: studentId, status });
+        });
+        fetch('/teacher/mark_attendance/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+          },
+          body: JSON.stringify({ attendance: data })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            Swal.fire('Saved!', data.message, 'success');
+            // Clear selection after save
+            document.querySelectorAll('.student-row').forEach(row => {
+              row.querySelectorAll('.btn-status').forEach(b => b.classList.remove('selected'));
+              row.dataset.status = '';
+            });
+            document.getElementById('save-attendance-btn').disabled = true;
+            // Refresh summary/history
+            fetchAttendanceSummary();
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        })
+        .catch((err) => {
+          if (err && err.message) {
+            Swal.fire('Error', err.message, 'error');
+          } else {
+            Swal.fire('Error', 'Network error. Please try again.', 'error');
+          }
+        });
+      });
+      function showAttendanceSummary(attendanceArr) {
+        let html = '<h3 style="color:#e63038; font-size:1.3rem; font-weight:800; margin-bottom:1rem;">Attendance Summary</h3>';
+        html += '<table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">';
+        html += '<thead><tr style="background:#ffe5e5; color:#e63038; font-weight:700;"><th style="padding:0.7rem;">Student</th><th style="padding:0.7rem;">Status</th></tr></thead><tbody>';
+        (attendanceArr || []).forEach(row => {
+          const name = row.student_name;
+          const status = row.status;
+          let statusText = status === 'present' ? '<span style="color:#4caf50; font-weight:700;">Present</span>' : '<span style="color:#e63038; font-weight:700;">Absent</span>';
+          html += `<tr><td style="padding:0.7rem; text-align:left;">${name}</td><td style="padding:0.7rem; text-align:center;">${statusText}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('attendance-summary').innerHTML = html;
+      }
+    });
+    // Hamburger menu logic
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const leftSidebar = document.getElementById('left-sidebar');
+    const leftSidebarOverlay = document.getElementById('left-sidebar-overlay');
+    hamburgerBtn.onclick = function() {
+      leftSidebar.style.left = '0';
+      leftSidebarOverlay.style.display = 'block';
+    };
+    leftSidebarOverlay.onclick = function() {
+      leftSidebar.style.left = '-270px';
+      leftSidebarOverlay.style.display = 'none';
+    };
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        leftSidebar.style.left = '-270px';
+        leftSidebarOverlay.style.display = 'none';
+      }
+    });
+    // Profile sidebar logic
+    document.getElementById('profile-btn').onclick = function() {
+      document.getElementById('profile-sidebar').style.right = '0';
+      document.getElementById('profile-sidebar-overlay').style.display = 'block';
+    };
+    document.getElementById('profile-sidebar-overlay').onclick = function() {
+      document.getElementById('profile-sidebar').style.right = '-350px';
+      document.getElementById('profile-sidebar-overlay').style.display = 'none';
+    };
+    document.getElementById('close-profile-sidebar').onclick = function() {
+      document.getElementById('profile-sidebar').style.right = '-350px';
+      document.getElementById('profile-sidebar-overlay').style.display = 'none';
+    };
+    // Accessibility: close sidebar with Escape key
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.getElementById('profile-sidebar').style.right = '-350px';
+        document.getElementById('profile-sidebar-overlay').style.display = 'none';
+      }
+    });
+    // Pending Requests logic
+    function fetchPendingRequests() {
+      fetch('/teacher/pending_attendance_requests/')
+        .then(r => r.json())
+        .then(data => {
+          const tbody = document.querySelector('#pending-requests-table tbody');
+          tbody.innerHTML = '';
+          if (data.status === 'success' && data.requests.length) {
+            data.requests.forEach(req => {
+              const tr = document.createElement('tr');
+              tr.classList.add('request-row');
+              tr.innerHTML = `
+                <td title="Student with request">${req.student_name} <span style="color:#ffb347;">★</span></td>
+                <td>${req.requested_status.charAt(0).toUpperCase() + req.requested_status.slice(1)}</td>
+                <td>${req.requested_at}</td>
+                <td><button class="approve-btn" data-id="${req.id}" title="Approve Request">✔️ Approve</button></td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } else {
+            tbody.innerHTML = '<tr><td colspan="4">No pending requests</td></tr>';
+          }
+        });
+    }
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('approve-btn')) {
+        const id = e.target.getAttribute('data-id');
+        fetch('/teacher/approve_attendance_request/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify({ request_id: id })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success') {
+            Swal.fire('Approved!', data.message, 'success');
+            fetchPendingRequests();
+            fetchAttendanceSummary();
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        });
+      }
+    });
+    // Attendance History logic
+    function fetchAttendanceSummary() {
+      fetch('/teacher/get_attendance_for_today/')
+        .then(r => r.json())
+        .then(data => {
+          const tbody = document.querySelector('#attendance-summary-table tbody');
+          tbody.innerHTML = '';
+          if (data.status === 'success' && data.attendance.length) {
+            data.attendance.forEach(a => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${a.student_name}</td>
+                <td>${a.status.charAt(0).toUpperCase() + a.status.slice(1)}</td>
+                <td>${a.date}</td>
+                <td>${a.marked_at}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } else {
+            tbody.innerHTML = '<tr><td colspan="4">No attendance records</td></tr>';
+          }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchPendingRequests();
+      fetchAttendanceSummary();
+    });
+  </script>
+{% endblock %} 

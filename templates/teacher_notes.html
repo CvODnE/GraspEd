@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Teacher Notes - GraspEd{% endblock %}
+
+{% block content %}
+{% with active_page='notes' %}
+  {% include 'teacher_header_sidebar.html' %}
+{% endwith %}
+
+<!-- Dashboard-style head and global styles -->
+<link rel="stylesheet" href="/static/css/styles.css" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif !important;
+    background-color: #fffafa !important;
+    color: #222 !important;
+  }
+  .btn-primary {
+    background-color: #e63038;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .btn-primary:hover {
+    background-color: #cc2a31;
+  }
+  .btn-secondary {
+    background-color: #fff;
+    color: #e63038;
+    border: 2px solid #e63038;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+  .btn-secondary:hover {
+    background-color: #e63038;
+    color: white;
+  }
+  /* Sidebar hamburger hover effect */
+  #left-sidebar nav a {
+    transition: color 0.2s, background 0.2s;
+  }
+  #left-sidebar nav a:hover {
+    color: #e63038 !important;
+    background: #fff0f0;
+  }
+  #left-sidebar nav a:hover svg *,
+  #left-sidebar nav a:focus svg * {
+    stroke: #e63038 !important;
+  }
+</style>
+<!-- Main Content -->
+<main style="padding:2rem; max-width:1200px; width:100%; margin:0 auto 0 0;">
+  <div style="margin-bottom:2rem;">
+    <h1 style="color:#333; font-size:2.5rem; font-weight:700; margin-bottom:0.5rem; background:linear-gradient(135deg,#e63038 0%,#c41e3a 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Teacher Notes</h1>
+    <p style="color:#666; font-size:1.1rem;">View all uploaded notes from your joined classes</p>
+  </div>
+
+  <!-- Notes Section -->
+  <div id="notes-section" style="background:white; border-radius:1rem; box-shadow:0 4px 20px rgba(0,0,0,0.08); padding:2rem; margin-bottom:2rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+      <h2 style="color:#333; font-size:1.8rem; font-weight:600; display:flex; align-items:center; gap:0.8rem;">
+        <span style="width:1.5rem; height:1.5rem; display:inline-block;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 2V8H20" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 13H8" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 17H8" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 9H8" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        All Uploaded Notes
+      </h2>
+    </div>
+    
+    <div id="uploaded-notes-list" style="min-height:200px;">
+      <!-- Notes will be loaded here -->
+    </div>
+  </div>
+</main>
+
+<!-- SweetAlert2 for confirmations -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  // Get CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Load notes on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadNotes();
+  });
+
+  async function loadNotes() {
+    try {
+      const resp = await fetch('/teacher/get_notes/');
+      const data = await resp.json();
+      const list = document.getElementById('uploaded-notes-list');
+      
+      if (data.status !== 'success' || !data.notes || data.notes.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding:3rem; color:#888;"><div style="font-size:4rem; margin-bottom:1rem;">📝</div><p style="font-size:1.2rem; margin-bottom:0.5rem;">No notes uploaded yet</p><p>Upload notes from your dashboard to see them here</p></div>';
+        return;
+      }
+      
+      list.innerHTML = data.notes.map(note => {
+        let filePreview = '';
+        if (note.file_url && note.file_name && /\.(jpg|jpeg|png|gif)$/i.test(note.file_name)) {
+          filePreview = `<img src='${note.file_url}' alt='Note Image' class='note-image-thumb' style='max-width:120px; max-height:90px; border-radius:0.5rem; box-shadow:0 2px 8px #e6303820; margin-top:0.5rem; cursor:pointer;' onclick='showImageModal(\"${note.file_url}\")'>`;
+        } else if (note.file_url) {
+          filePreview = `<a href='${note.file_url}' target='_blank' style='color:#e63038; font-weight:500; display:inline-block; margin-top:0.5rem; display:flex; align-items:center; gap:0.4rem;'><span style='width:1.1rem; height:1.1rem; display:inline-block;'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='4' width='16' height='16' rx='2' stroke='#e63038' stroke-width='2'/><path d='M8 8H16V16H8V8Z' fill='#e63038' fill-opacity='0.15'/></svg></span> ${note.file_name}</a>`;
+        }
+        return `
+          <div class='uploaded-note-card' style='margin-bottom:1.5rem; background:linear-gradient(135deg,#fff0f0 0%,#f9f9f9 100%); border-radius:0.8rem; box-shadow:0 2px 8px rgba(230,57,70,0.07); padding:1rem 1.2rem; animation:fadeInUp 0.8s;'>
+            <div style='font-weight:600; color:#e63038; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;'>
+              <span style="width:1.2rem; height:1.2rem; display:inline-block; vertical-align:middle;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="#e63038" stroke-width="2"/><path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#e63038" stroke-width="2"/></svg>
+              </span>
+              <span style='font-weight:700;'>${note.name || ''}</span>
+              <span style='color:#888; font-weight:400; margin-left:0.5rem;'>(${note.uploaded_at || note.created_at || ''})</span>
+              ${note.class_name ? `<span style='color:#666; font-weight:500; margin-left:0.5rem; background:#e6303810; padding:0.2rem 0.5rem; border-radius:0.4rem; font-size:0.9rem;'>${note.class_name}</span>` : ''}
+              <button onclick='showDeleteOptions(${note.id}, "${note.name || 'Note'}", ${note.is_own_note})' style='background:none; border:none; color:#e63038; cursor:pointer; padding:0.3rem; border-radius:0.5rem; transition:background 0.2s; margin-left:auto;' onmouseover='this.style.background="#fff0f0"' onmouseout='this.style.background="none"'>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 6H5H21" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;'>
+              <span style='color:#666; font-size:0.9rem;'>By: ${note.uploader_name || note.teacher || 'Unknown'}</span>
+              <span style='background:${note.uploader_type === 'teacher' ? '#e63038' : '#28a745'}; color:#fff; padding:0.2rem 0.6rem; border-radius:0.8rem; font-size:0.8rem; font-weight:600;'>${note.uploader_type === 'teacher' ? 'Teacher' : 'Student'}</span>
+            </div>
+            ${note.text ? `<div style='margin:0.7rem 0 0.3rem 0; color:#333; font-size:1.05rem; display:flex; align-items:center; gap:0.5rem;'><span style='width:1.1rem; height:1.1rem; display:inline-block;'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='4' width='16' height='16' rx='2' stroke='#e63038' stroke-width='2'/><path d='M8 10H16' stroke='#e63038' stroke-width='2' stroke-linecap='round'/><path d='M8 14H12' stroke='#e63038' stroke-width='2' stroke-linecap='round'/></svg></span> ${note.text}</div>` : ''}
+            ${filePreview}
+          </div>
+        `;
+      }).join('');
+      
+      // Lightbox modal for image preview
+      if (!document.getElementById('note-image-modal')) {
+        const modal = document.createElement('div');
+        modal.id = 'note-image-modal';
+        modal.style = 'display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;';
+        modal.innerHTML = `<img id='note-image-modal-img' style='max-width:90vw; max-height:80vh; border-radius:1rem; box-shadow:0 8px 32px #0008;'><span style='position:absolute;top:2rem;right:2rem;font-size:2.5rem;color:#fff;cursor:pointer;' onclick='document.getElementById(\'note-image-modal\').style.display=\'none\''>&times;</span>`;
+        document.body.appendChild(modal);
+      }
+      window.showImageModal = function(url) {
+        document.getElementById('note-image-modal-img').src = url;
+        document.getElementById('note-image-modal').style.display = 'flex';
+      };
+    } catch (error) {
+      console.error('Error loading notes:', error);
+      document.getElementById('uploaded-notes-list').innerHTML = '<p style="color:red;">Error loading notes. Please try again.</p>';
+    }
+  }
+
+  // Hamburger menu logic (unified)
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const leftSidebar = document.getElementById('left-sidebar');
+  const leftSidebarOverlay = document.getElementById('left-sidebar-overlay');
+  hamburgerBtn.onclick = function() {
+    leftSidebar.style.left = '0';
+    leftSidebarOverlay.style.display = 'block';
+    leftSidebar.style.transition = 'left 0.35s cubic-bezier(.77,0,.18,1)';
+  };
+  leftSidebarOverlay.onclick = function() {
+    leftSidebar.style.left = '-270px';
+    leftSidebarOverlay.style.display = 'none';
+  };
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      leftSidebar.style.left = '-270px';
+      leftSidebarOverlay.style.display = 'none';
+    }
+  });
+
+  // Close sidebar when any sidebar link is clicked
+  document.querySelectorAll('#left-sidebar nav a').forEach(link => {
+    link.addEventListener('click', function() {
+      leftSidebar.style.left = '-270px';
+      leftSidebarOverlay.style.display = 'none';
+    });
+  });
+
+  // Profile sidebar logic
+  document.getElementById('profile-btn').onclick = function() {
+    document.getElementById('profile-sidebar').style.right = '0';
+    document.getElementById('profile-sidebar-overlay').style.display = 'block';
+  };
+  document.getElementById('profile-sidebar-overlay').onclick = function() {
+    document.getElementById('profile-sidebar').style.right = '-350px';
+    document.getElementById('profile-sidebar-overlay').style.display = 'none';
+  };
+  document.getElementById('close-profile-sidebar').onclick = function() {
+    document.getElementById('profile-sidebar').style.right = '-350px';
+    document.getElementById('profile-sidebar-overlay').style.display = 'none';
+  };
+  // Accessibility: close sidebar with Escape key
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('profile-sidebar').style.right = '-350px';
+      document.getElementById('profile-sidebar-overlay').style.display = 'none';
+    }
+  });
+  // Theme toggle (placeholder logic)
+  document.getElementById('theme-toggle-btn').onclick = function() {
+    Swal.fire({
+      icon: 'info',
+      title: 'Theme Switch',
+      text: 'Theme switching coming soon!',
+      confirmButtonColor: '#e63038'
+    });
+  };
+
+  // Logo animation retrigger on load only
+  const logo = document.querySelector('.animated-logo');
+  if (logo) {
+    logo.classList.remove('animated-logo');
+    void logo.offsetWidth;
+    logo.classList.add('animated-logo');
+  }
+
+  // Profile photo change functionality
+  document.getElementById('change-photo-btn').addEventListener('click', function() {
+    document.getElementById('profile-photo-input').click();
+  });
+
+  document.getElementById('profile-photo-input').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid File Type',
+        text: 'Please upload an image file (JPEG, PNG, or GIF).',
+        confirmButtonColor: '#e63038'
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'File Too Large',
+        text: 'Please upload an image smaller than 5MB.',
+        confirmButtonColor: '#e63038'
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('profile_photo', file);
+
+    try {
+      const response = await fetch('/teacher/upload_profile_photo/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        // Update profile photo in sidebar
+        const profilePhotoImg = document.getElementById('profile-photo-img');
+        profilePhotoImg.src = result.photo_url;
+        profilePhotoImg.style.display = 'block';
+        
+        // Update profile photo in header
+        const headerProfilePhoto = document.getElementById('header-profile-photo');
+        headerProfilePhoto.src = result.photo_url;
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Profile Photo Updated',
+          text: 'Your profile photo has been updated successfully!',
+          confirmButtonColor: '#e63038'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Upload Failed',
+          text: result.message || 'Failed to upload profile photo.',
+          confirmButtonColor: '#e63038'
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading profile photo:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'An error occurred while uploading the photo.',
+        confirmButtonColor: '#e63038'
+      });
+    }
+  });
+
+  // Leave class functionality
+  document.getElementById('leave-class-btn').addEventListener('click', async function() {
+    const result = await Swal.fire({
+      title: 'Leave Class?',
+      text: 'Are you sure you want to leave the current class? You will need to rejoin to access class features.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e63038',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, leave class',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch('/teacher/leave_class/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          Swal.fire({
+            icon: 'success',
+            title: 'Left Class Successfully',
+            text: data.message,
+            confirmButtonColor: '#e63038'
+          }).then(() => {
+            window.location.href = '/teacher/dashboard/';
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message || 'Failed to leave class.',
+            confirmButtonColor: '#e63038'
+          });
+        }
+      } catch (error) {
+        console.error('Error leaving class:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while leaving the class.',
+          confirmButtonColor: '#e63038'
+        });
+      }
+    }
+  });
+
+  function showDeleteOptions(noteId, noteName, isOwnNote) {
+    const options = {
+      title: 'Delete Note',
+      text: `What would you like to do with "${noteName}"?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e63038',
+      cancelButtonColor: '#6c757d',
+      cancelButtonText: 'Cancel',
+      showDenyButton: true,
+      denyButtonText: 'Delete for Me',
+      denyButtonColor: '#28a745',
+      confirmButtonText: isOwnNote ? 'Delete for Everyone' : 'Delete for Everyone (Not Available)',
+      confirmButtonColor: isOwnNote ? '#e63038' : '#6c757d',
+      allowOutsideClick: true,
+      customClass: {
+        confirmButton: isOwnNote ? '' : 'swal2-confirm-disabled'
+      }
+    };
+    
+    Swal.fire(options).then((result) => {
+      if (result.isConfirmed && isOwnNote) {
+        // Delete for everyone (only for own notes)
+        deleteNote(noteId, noteName, 'delete_for_everyone');
+      } else if (result.isDenied) {
+        // Delete for me (for any note)
+        deleteNote(noteId, noteName, 'delete_for_me');
+      }
+    });
+  }
+  
+  function deleteNote(noteId, noteName, deleteType) {
+    const confirmText = deleteType === 'delete_for_everyone' 
+      ? `Are you sure you want to delete "${noteName}" for everyone? This action cannot be undone.`
+      : `Are you sure you want to hide "${noteName}" from your view?`;
+    
+    const confirmIcon = deleteType === 'delete_for_everyone' ? 'warning' : 'info';
+    
+    Swal.fire({
+      title: deleteType === 'delete_for_everyone' ? 'Delete for Everyone?' : 'Hide Note?',
+      text: confirmText,
+      icon: confirmIcon,
+      showCancelButton: true,
+      confirmButtonColor: '#e63038',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, Continue',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch('/teacher/delete_note/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            note_id: noteId,
+            delete_type: deleteType
+          })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success') {
+            Swal.fire('Success!', data.message, 'success');
+            loadNotes(); // Refresh the notes list
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Delete error:', error);
+          Swal.fire('Error', 'An error occurred while processing your request.', 'error');
+        });
+      }
+    });
+  }
+</script>
+
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animated-logo {
+    animation: logoFloat 3s ease-in-out infinite;
+  }
+  
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+  }
+</style>
+{% endblock %} 

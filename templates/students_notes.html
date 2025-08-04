@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Notes</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .notes-section { margin-top: 3rem; }
+    .notes-section h3 { color: #e63038; display: flex; align-items: center; gap: 0.7rem; font-size: 1.5rem; font-weight: 700; }
+    .note-image-thumb { max-width: 120px; max-height: 90px; border-radius: 0.5rem; box-shadow: 0 2px 8px #e6303820; margin-top: 0.5rem; cursor: pointer; }
+    .uploaded-note-card { margin-bottom: 1.2rem; background: linear-gradient(135deg,#fff0f0 0%,#f9f9f9 100%); border-radius: 0.8rem; box-shadow: 0 2px 8px rgba(230,57,70,0.07); padding: 1rem 1.2rem; }
+    .uploaded-note-card:hover { box-shadow: 0 8px 32px #e6303840; transform: translateY(-2px) scale(1.025); }
+    .note-meta { font-size: 1.05rem; color: #e63038; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .note-text { margin: 0.7rem 0 0.3rem 0; color: #333; font-size: 1.08rem; display: flex; align-items: center; gap: 0.5rem; }
+    .note-file-link { color: #e63038; font-weight: 500; display: inline-block; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .upload-form {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 24px rgba(230,57,70,0.08);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .upload-form .form-group { margin-bottom: 1.5rem; }
+    .upload-form label { font-weight: 700; color: #e63038; display: block; margin-bottom: 0.5rem; }
+    .upload-form input[type="file"] { display: block; margin: 0 auto 1rem auto; }
+    .upload-form textarea { width: 100%; min-height: 80px; border-radius: 0.5rem; border: 1px solid #e6303840; padding: 0.7rem; font-size: 1rem; }
+    .upload-form button {
+      background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      border-radius: 0.8rem;
+      padding: 0.7rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .upload-form button:hover {
+      background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%);
+      box-shadow: 0 6px 24px #e6303840;
+      transform: scale(1.03);
+    }
+    .section-title {
+      color: #e63038;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 2.5rem 0 1rem 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  {% with active_page='notes' %}
+    {% include 'student_header_sidebar.html' %}
+  {% endwith %}
+  <main style="padding:2rem; max-width:1100px; margin:0 auto;">
+    <div class="notes-section">
+      <h3>
+        <span style="width:1.7rem; height:1.7rem; display:inline-block; vertical-align:middle;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5V6.75C4 5.50736 5.00736 4.5 6.25 4.5H17.75C18.9926 4.5 20 5.50736 20 6.75V19.5" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19.5H20" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8.25H15" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        Class Notes
+      </h3>
+      <!-- Upload Form -->
+      <form id="student-upload-note-form" class="upload-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="note-text">
+            <img src="/static/images/pencil.svg" alt="Pencil Icon" style="width:1.2rem; height:1.2rem; vertical-align:middle; margin-right:0.5rem; filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);">
+            Type Note
+          </label>
+          <textarea id="note-text" name="note_text" placeholder="Type your note here..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="note-file">Upload Note File (PDF, PNG, JPG, optional):</label>
+          <input type="file" id="note-file" name="note_file" accept=".pdf,.png,.jpg,.jpeg" />
+        </div>
+        <button type="submit">Upload Note</button>
+      </form>
+      <div class="section-title">Teacher Uploaded Notes</div>
+      <div id="teacher-notes-container" style="margin-top:1rem;"></div>
+      <div class="section-title">Your Uploaded Notes</div>
+      <div id="student-notes-container" style="margin-top:1rem;"></div>
+    </div>
+  </main>
+  <script>
+    function fetchNotes() {
+      fetch('/student/get_notes/')
+        .then(r => r.json())
+        .then(data => {
+          const teacherNotes = [];
+          const studentNotes = [];
+          if (data.status === 'success' && data.notes.length) {
+            data.notes.forEach(note => {
+              if (note.teacher) {
+                teacherNotes.push(note);
+              } else {
+                studentNotes.push(note);
+              }
+            });
+          }
+          renderNotes(teacherNotes, 'teacher-notes-container', true);
+          renderNotes(studentNotes, 'student-notes-container', false);
+        });
+    }
+    function renderNotes(notes, containerId, isTeacher) {
+      const container = document.getElementById(containerId);
+      if (!notes.length) {
+        container.innerHTML = `<p style="color:#666; font-style:italic;">No ${isTeacher ? 'teacher' : 'student'} notes available yet.</p>`;
+            return;
+          }
+      container.innerHTML = notes.map(note => {
+            let filePreview = '';
+            if (note.file_url && note.file_name && /\.(jpg|jpeg|png|gif)$/i.test(note.file_name)) {
+              filePreview = `<img src='${note.file_url}' alt='Note Image' class='note-image-thumb' onclick='showImageModal("${note.file_url}")'>`;
+            } else if (note.file_url) {
+              filePreview = `<a href='${note.file_url}' target='_blank' class='note-file-link'><span style='width:1.1rem; height:1.1rem; display:inline-block;'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='4' width='16' height='16' rx='2' stroke='#e63038' stroke-width='2'/><path d='M8 8H16V16H8V8Z' fill='#e63038' fill-opacity='0.15'/></svg></span> ${note.file_name}</a>`;
+            }
+            return `
+              <div class='uploaded-note-card'>
+                <div class='note-meta'>
+                  <span style="width:1.2rem; height:1.2rem; display:inline-block; vertical-align:middle;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="#e63038" stroke-width="2"/><path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#e63038" stroke-width="2"/></svg>
+                  </span>
+                  <span style='font-weight:700;'>${note.name || ''}</span>
+                  <span style='color:#888; font-weight:400; margin-left:0.7rem; font-size:0.98rem;'>${note.uploaded_at || note.created_at || ''}</span>
+              <span style='color:#e63038; font-weight:500; margin-left:0.7rem; font-size:0.98rem;'>${note.class_name || ''}</span>
+              ${isTeacher ? `<span style='margin-left:0.7rem; color:#333; font-size:0.95rem;'>By Teacher</span>` : `<span style='margin-left:0.7rem; color:#888; font-size:0.95rem;'>By You</span>`}
+                </div>
+                ${note.text ? `<div class='note-text'><span style='width:1.1rem; height:1.1rem; display:inline-block;'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='4' width='16' height='16' rx='2' stroke='#e63038' stroke-width='2'/><path d='M8 10H16' stroke='#e63038' stroke-width='2' stroke-linecap='round'/><path d='M8 14H12' stroke='#e63038' stroke-width='2' stroke-linecap='round'/></svg></span> ${note.text}</div>` : ''}
+                ${filePreview}
+              </div>
+            `;
+          }).join('');
+          // Lightbox modal for image preview
+          if (!document.getElementById('note-image-modal')) {
+            const modal = document.createElement('div');
+            modal.id = 'note-image-modal';
+            modal.style = 'display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;';
+            modal.innerHTML = `<img id='note-image-modal-img' style='max-width:90vw; max-height:80vh; border-radius:1rem; box-shadow:0 8px 32px #0008;'><span style='position:absolute;top:2rem;right:2rem;font-size:2.5rem;color:#fff;cursor:pointer;' onclick='document.getElementById(\'note-image-modal\').style.display=\'none\''>&times;</span>`;
+            document.body.appendChild(modal);
+          }
+          window.showImageModal = function(url) {
+            document.getElementById('note-image-modal-img').src = url;
+            document.getElementById('note-image-modal').style.display = 'flex';
+          };
+    }
+    document.getElementById('student-upload-note-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      const noteText = document.getElementById('note-text').value;
+      const noteFile = document.getElementById('note-file').files[0];
+      if (!noteText && !noteFile) {
+        Swal.fire('Error', 'Please provide a file or type a note.', 'error');
+        return;
+      }
+      if (noteText) formData.append('note_text', noteText);
+      if (noteFile) formData.append('note_file', noteFile);
+      fetch('/student/upload_note/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          Swal.fire('Uploaded!', data.message, 'success');
+          document.getElementById('student-upload-note-form').reset();
+          fetchNotes();
+        } else {
+          Swal.fire('Error', data.message, 'error');
+      }
+      });
+    });
+    document.addEventListener('DOMContentLoaded', fetchNotes);
+    // Hamburger menu logic (unified)
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const leftSidebar = document.getElementById('left-sidebar');
+    const leftSidebarOverlay = document.getElementById('left-sidebar-overlay');
+    hamburgerBtn.onclick = function() {
+      leftSidebar.style.left = '0';
+      leftSidebarOverlay.style.display = 'block';
+      leftSidebar.style.transition = 'left 0.35s cubic-bezier(.77,0,.18,1)';
+    };
+    leftSidebarOverlay.onclick = function() {
+      leftSidebar.style.left = '-270px';
+      leftSidebarOverlay.style.display = 'none';
+    };
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        leftSidebar.style.left = '-270px';
+        leftSidebarOverlay.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html> 

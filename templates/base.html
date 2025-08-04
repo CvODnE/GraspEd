@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraspEd</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+</head>
+<body>
+    {% block content %}
+    {% if user.is_authenticated and user.studentaccount %}
+      <nav>
+        <a href="/student/dashboard/">Dashboard</a>
+        <a href="/student/attendance/">Attendance</a>
+        <a href="/student/notes/">Notes</a>
+      </nav>
+    {% endif %}
+    {% endblock %}
+    <!-- Agentic AI Chatbot Bubble and Window -->
+    <div id="ai-chat-bubble" style="display: flex; align-items: center; justify-content: center; position: fixed; bottom: 32px; right: 32px; z-index: 9999; cursor: pointer; background: #ff4d53; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 16px rgba(230,57,70,0.18); transition: box-shadow 0.3s;">
+      <span style="color: #fff; font-size: 2rem;">💬</span>
+    </div>
+    <div id="ai-chat-window" style="display: none; position: fixed; bottom: 100px; right: 32px; width: 350px; max-width: 95vw; height: 480px; background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 10000; flex-direction: column; overflow: hidden;">
+      <div style="background: #ff4d53; color: #fff; padding: 1rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+        <span>GraspEd's Chatbot</span>
+        <button id="ai-chat-close" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+      </div>
+      <div id="ai-chat-messages" style="flex: 1; padding: 1rem; overflow-y: auto; background: #f9f9f9;"></div>
+      <form id="ai-chat-form" style="display: flex; border-top: 1px solid #eee;">
+        <input id="ai-chat-input" type="text" placeholder="Ask me anything..." autocomplete="off" style="flex: 1; border: none; padding: 0.75rem; font-size: 1rem; outline: none;" />
+        <button type="submit" style="background: #ff4d53; color: #fff; border: none; padding: 0 1.2rem; font-size: 1.2rem; cursor: pointer;">➤</button>
+      </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- SweetAlert2 for notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    function escapeHtml(text) {
+        return text.replace(/[&<>"']/g, function(tag) {
+            const chars = {
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            };
+            return chars[tag] || tag;
+        });
+    }
+    </script>
+    <!-- Agentic AI Chatbot JS -->
+    <script>
+    (function() {
+      const bubble = document.getElementById('ai-chat-bubble');
+      const windowEl = document.getElementById('ai-chat-window');
+      const closeBtn = document.getElementById('ai-chat-close');
+      const form = document.getElementById('ai-chat-form');
+      const input = document.getElementById('ai-chat-input');
+      const messages = document.getElementById('ai-chat-messages');
+
+      if (bubble && windowEl && closeBtn && form && input && messages) {
+        bubble.onclick = () => {
+          windowEl.style.display = 'flex';
+          bubble.style.display = 'none';
+          setTimeout(() => { input.focus(); }, 100);
+        };
+        closeBtn.onclick = () => {
+          windowEl.style.display = 'none';
+          bubble.style.display = 'flex';
+        };
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const userMsg = input.value.trim();
+          if (!userMsg) return;
+          appendMessage('You', userMsg, true);
+          input.value = '';
+          appendMessage('Agentic AI', '<span style="color:#aaa">Thinking...</span>', false, true);
+          try {
+            const resp = await fetch('/api/ai-chat/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: userMsg })
+            });
+            const data = await resp.json();
+            messages.removeChild(messages.lastChild); // Remove 'Thinking...'
+            if (data.reply) {
+              appendMessage('Agentic AI', escapeHtml(data.reply), false);
+            } else {
+              appendMessage('Agentic AI', '<span style="color:red">Error: ' + escapeHtml(data.error || 'Unknown error') + '</span>', false);
+            }
+          } catch (err) {
+            messages.removeChild(messages.lastChild);
+            appendMessage('Agentic AI', '<span style="color:red">Network error</span>', false);
+          }
+        };
+        function appendMessage(sender, text, isUser, isThinking) {
+          const msg = document.createElement('div');
+          msg.style.margin = '0.5rem 0';
+          msg.style.textAlign = isUser ? 'right' : 'left';
+          msg.innerHTML = `<span style="display:inline-block; background:${isUser ? '#ff4d53' : '#eee'}; color:${isUser ? '#fff' : '#333'}; padding:0.5rem 1rem; border-radius:1.2rem; max-width:80%; word-break:break-word; font-size:1rem;">${text}</span>`;
+          messages.appendChild(msg);
+          messages.scrollTop = messages.scrollHeight;
+        }
+      }
+    })();
+    </script>
+</body>
+</html> 

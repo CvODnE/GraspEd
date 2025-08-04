@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Notes</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .notes-container {
+      max-width: 600px;
+      margin: 3rem auto;
+      background: #fff0f0;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px #e6303820;
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .notes-title {
+      color: #e63038;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 2rem;
+    }
+    .upload-form {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 24px rgba(230,57,70,0.08);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .upload-form .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .upload-form label {
+      font-weight: 700;
+      color: #e63038;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .upload-form input[type="file"] {
+      display: block;
+      margin: 0 auto 1rem auto;
+    }
+    .upload-form button {
+      background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      border-radius: 0.8rem;
+      padding: 0.7rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .upload-form button:hover {
+      background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%);
+      box-shadow: 0 6px 24px #e6303840;
+      transform: scale(1.03);
+    }
+    .notes-list {
+      margin-top: 2rem;
+      text-align: left;
+    }
+    .note-item {
+      background: #fff;
+      border-radius: 0.7rem;
+      box-shadow: 0 2px 8px #e6303810;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .note-item a {
+      color: #e63038;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+    .note-item a:hover {
+      text-decoration: underline;
+    }
+    .upload-animated-btn {
+      background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.18rem;
+      letter-spacing: 0.03em;
+      border: none;
+      border-radius: 1.2rem;
+      padding: 1.1rem 0;
+      width: 100%;
+      box-shadow: 0 4px 24px #e6303840;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.18s cubic-bezier(.77,0,.18,1), box-shadow 0.18s;
+      outline: none;
+    }
+    .upload-animated-btn:hover, .upload-animated-btn:focus {
+      transform: scale(1.045);
+      box-shadow: 0 8px 32px #e6303870;
+      background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%);
+    }
+    .upload-animated-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px #e6303840;
+    }
+    .upload-btn-shine {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -75%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.7) 60%, rgba(255,255,255,0.18) 100%);
+      transform: skewX(-20deg);
+      pointer-events: none;
+      animation: btn-shine-move 2.2s cubic-bezier(.77,0,.18,1) infinite;
+    }
+    @keyframes btn-shine-move {
+      0% { left: -75%; }
+      60% { left: 120%; }
+      100% { left: 120%; }
+    }
+  </style>
+</head>
+<body>
+  {% with active_page='notes' %}
+    {% include 'student_header_sidebar.html' %}
+  {% endwith %}
+  <main>
+    <div class="notes-container">
+      <div style="background:linear-gradient(135deg,#ffe5e5 0%,#fff 100%); border-radius:1.5rem; box-shadow:0 8px 32px #e6303820; padding:2.5rem 2rem; max-width:600px; margin:auto; margin-bottom:2rem;">
+        <h3 style="color:#e63038; display:flex; align-items:center; gap:0.7rem; font-size:2rem; font-weight:800; margin-bottom:1.5rem;">
+          <span style="width:2.2rem; height:2.2rem; display:inline-block; vertical-align:middle;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5V6.75C4 5.50736 5.00736 4.5 6.25 4.5H17.75C18.9926 4.5 20 5.50736 20 6.75V19.5" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19.5H20" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8.25H15" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Upload Notes
+        </h3>
+        <form id="student-upload-note-form" enctype="multipart/form-data" style="background:#fff; border-radius:1.2rem; box-shadow:0 2px 8px #e6303820; padding:1.5rem; animation:fadeInUp 1.2s;">
+          {% csrf_token %}
+          <label class="file-upload-label choose-file-btn" style="font-weight:600; color:#e63038; display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; cursor:pointer;">
+            <span style="width:1.5rem; height:1.5rem; display:inline-block;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#e63038" stroke-width="2"/><path d="M8 8H16V16H8V8Z" fill="#e63038" fill-opacity="0.15"/></svg>
+            </span>
+            <span class="choose-file-text" style="flex:1;">Choose File (PDF/Image)</span>
+            <input type="file" name="note_file" accept=".pdf,.jpg,.jpeg,.png,.gif" style="display:none;" id="note-file-input">
+            <span id="file-chosen" style="color:#444; font-weight:400; margin-left:1rem; font-size:0.98rem;"></span>
+          </label>
+          <label style="font-weight:600; color:#e63038; display:flex; align-items:center; gap:0.5rem;">
+            <img src="{% static 'images/pencil.svg' %}" alt="Pencil Icon" style="width:1.5rem; height:1.5rem; filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);">
+            <span style="flex:1;">Or Type Note</span>
+            <textarea name="note_text" id="note-text" rows="3" placeholder="Type your note here..." style="width:100%; border-radius:0.5rem; border:1px solid #e63038; padding:0.5rem; margin-left:1rem;"></textarea>
+          </label>
+          <button type="submit" class="btn-primary powerful-btn upload-animated-btn" style="margin-top:1rem; width:100%; font-size:1.18rem; font-weight:800; letter-spacing:0.03em; box-shadow:0 4px 24px #e6303840; padding:1.1rem 0; border-radius:1.2rem; position:relative; overflow:hidden; transition:transform 0.18s cubic-bezier(.77,0,.18,1), box-shadow 0.18s;">
+            <span class="upload-btn-text">Upload Note</span>
+            <span class="upload-btn-shine"></span>
+          </button>
+          <div id="upload-note-message" style="margin-top:1rem;"></div>
+        </form>
+      </div>
+      <div id="notes-list" style="margin-top:2.5rem;"></div>
+    </div>
+  </main>
+  <script>
+    function fetchNotes() {
+      fetch('/student/get_notes/')
+        .then(r => r.json())
+        .then(data => {
+          const notesList = document.getElementById('notes-list');
+          notesList.innerHTML = '';
+          if (data.status === 'success' && data.notes.length) {
+            notesList.innerHTML = data.notes.map(note => {
+              let imageHtml = '';
+              if (note.file_url && note.file_name && /\.(jpg|jpeg|png|gif)$/i.test(note.file_name)) {
+                imageHtml = `<img src='${note.file_url}' alt='Note Image' style='max-width:100%; max-height:350px; border-radius:1rem; box-shadow:0 4px 24px #e6303820; margin-bottom:1rem; display:block; margin-left:auto; margin-right:auto; cursor:pointer;' onclick='showImageModal("${note.file_url}")'>`;
+              } else if (note.file_url) {
+                imageHtml = `<a href='${note.file_url}' target='_blank' style='color:#e63038; font-weight:500; display:inline-block; margin-top:0.5rem; display:flex; align-items:center; gap:0.4rem;'><span style='width:1.1rem; height:1.1rem; display:inline-block;'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='4' width='16' height='16' rx='2' stroke='#e63038' stroke-width='2'/><path d='M8 8H16V16H8V8Z' fill='#e63038' fill-opacity='0.15'/></svg></span> ${note.file_name}</a>`;
+              }
+              let textHtml = note.text ? `<div style='margin:1rem 0; color:#222; font-size:1.18rem; font-weight:500; text-align:center;'>${note.text}</div>` : '';
+              return `
+                <div style='background:#fff; border-radius:1.2rem; box-shadow:0 4px 24px #e6303820; padding:2rem 1.5rem; margin-bottom:2.2rem; max-width:600px; margin-left:auto; margin-right:auto; animation:fadeInUp 0.8s;'>
+                  <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;'>
+                    <span style='color:#888; font-size:0.9rem;'>${note.uploader_name || 'Unknown'}</span>
+                    <div style='display:flex; align-items:center; gap:0.5rem;'>
+                      <span style='background:${note.uploader_type === 'teacher' ? '#e63038' : '#28a745'}; color:#fff; padding:0.3rem 0.8rem; border-radius:1rem; font-size:0.8rem; font-weight:600;'>${note.uploader_type === 'teacher' ? 'Teacher' : 'Student'}</span>
+                      <button onclick='showDeleteOptions(${note.id}, "${note.name || 'Note'}", ${note.is_own_note})' style='background:none; border:none; color:#e63038; cursor:pointer; padding:0.3rem; border-radius:0.5rem; transition:background 0.2s;' onmouseover='this.style.background="#fff0f0"' onmouseout='this.style.background="none"'>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3 6H5H21" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  ${imageHtml}
+                  ${textHtml}
+                  <div style='color:#888; font-size:0.98rem; text-align:right;'>${note.uploaded_at || note.created_at || ''}</div>
+                </div>
+              `;
+            }).join('');
+          } else {
+            notesList.innerHTML = '<div style="color:#999; text-align:center;">No notes uploaded yet.</div>';
+          }
+        });
+    }
+    document.getElementById('note-file-input').addEventListener('change', function(e) {
+      const fileName = this.files[0] ? this.files[0].name : '';
+      document.getElementById('file-chosen').textContent = fileName;
+    });
+    document.getElementById('student-upload-note-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      console.log('Form submitted');
+      const formData = new FormData(this);
+      const noteText = document.getElementById('note-text').value;
+      const noteFile = document.getElementById('note-file-input').files[0];
+      console.log('Note text:', noteText);
+      console.log('Note file:', noteFile);
+      if (!noteText && !noteFile) {
+        Swal.fire('Error', 'Please provide a file or type a note.', 'error');
+        return;
+      }
+      if (noteText) formData.set('note_text', noteText);
+      if (noteFile) formData.set('note_file', noteFile);
+      console.log('FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+      fetch('/student/upload_note/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(r => {
+        console.log('Response status:', r.status);
+        return r.json();
+      })
+      .then(data => {
+        console.log('Response data:', data);
+        const msg = document.getElementById('upload-note-message');
+        if (data.status === 'success') {
+          Swal.fire('Uploaded!', data.message, 'success');
+          document.getElementById('student-upload-note-form').reset();
+          document.getElementById('file-chosen').textContent = '';
+          msg.innerHTML = `<span style='color:green;'>${data.message}</span>`;
+          fetchNotes();
+        } else {
+          Swal.fire('Error', data.message, 'error');
+          msg.innerHTML = `<span style='color:red;'>${data.message}</span>`;
+        }
+      })
+      .catch(error => {
+        console.error('Upload error:', error);
+        Swal.fire('Error', 'An error occurred while uploading. Please try again.', 'error');
+        document.getElementById('upload-note-message').innerHTML = `<span style='color:red;'>Upload failed: ${error.message}</span>`;
+      });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchNotes();
+    });
+    // Hamburger menu logic (same as dashboard)
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const leftSidebar = document.getElementById('left-sidebar');
+    const leftSidebarOverlay = document.getElementById('left-sidebar-overlay');
+    hamburgerBtn.onclick = function() {
+      leftSidebar.style.left = '0';
+      leftSidebarOverlay.style.display = 'block';
+    };
+    leftSidebarOverlay.onclick = function() {
+      leftSidebar.style.left = '-270px';
+      leftSidebarOverlay.style.display = 'none';
+    };
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        leftSidebar.style.left = '-270px';
+        leftSidebarOverlay.style.display = 'none';
+      }
+    });
+    // Profile sidebar logic
+    document.getElementById('profile-btn').onclick = function() {
+      document.getElementById('profile-sidebar').style.right = '0';
+      document.getElementById('profile-sidebar-overlay').style.display = 'block';
+    };
+    document.getElementById('profile-sidebar-overlay').onclick = function() {
+      document.getElementById('profile-sidebar').style.right = '-350px';
+      document.getElementById('profile-sidebar-overlay').style.display = 'none';
+    };
+    // Leave class logic (SweetAlert)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    document.getElementById('leave-class-btn')?.addEventListener('click', function() {
+      Swal.fire({
+        title: 'Leave Class?',
+        text: 'Are you sure you want to leave this class? You will lose access to its notes and attendance.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e63038',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Leave',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch('/student/leave_class/', {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken'),
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'success') {
+              Swal.fire({
+                icon: 'success',
+                title: 'Left Class',
+                text: data.message,
+                confirmButtonColor: '#e63038',
+                timer: 1800,
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire('Error', data.message, 'error');
+            }
+          });
+        }
+      });
+    });
+    function showDeleteOptions(noteId, noteName, isOwnNote) {
+      const options = {
+        title: 'Delete Note',
+        text: `What would you like to do with "${noteName}"?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#e63038',
+        cancelButtonColor: '#6c757d',
+        cancelButtonText: 'Cancel',
+        showDenyButton: true,
+        denyButtonText: 'Delete for Me',
+        denyButtonColor: '#28a745',
+        confirmButtonText: isOwnNote ? 'Delete for Everyone' : 'Delete for Everyone (Not Available)',
+        confirmButtonColor: isOwnNote ? '#e63038' : '#6c757d',
+        allowOutsideClick: true,
+        customClass: {
+          confirmButton: isOwnNote ? '' : 'swal2-confirm-disabled'
+        }
+      };
+      
+      Swal.fire(options).then((result) => {
+        if (result.isConfirmed && isOwnNote) {
+          // Delete for everyone (only for own notes)
+          deleteNote(noteId, noteName, 'delete_for_everyone');
+        } else if (result.isDenied) {
+          // Delete for me (for any note)
+          deleteNote(noteId, noteName, 'delete_for_me');
+        }
+      });
+    }
+    
+    function deleteNote(noteId, noteName, deleteType) {
+      const confirmText = deleteType === 'delete_for_everyone' 
+        ? `Are you sure you want to delete "${noteName}" for everyone? This action cannot be undone.`
+        : `Are you sure you want to hide "${noteName}" from your view?`;
+      
+      const confirmIcon = deleteType === 'delete_for_everyone' ? 'warning' : 'info';
+      
+      Swal.fire({
+        title: deleteType === 'delete_for_everyone' ? 'Delete for Everyone?' : 'Hide Note?',
+        text: confirmText,
+        icon: confirmIcon,
+        showCancelButton: true,
+        confirmButtonColor: '#e63038',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Continue',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch('/student/delete_note/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+              note_id: noteId,
+              delete_type: deleteType
+            })
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (data.status === 'success') {
+              Swal.fire('Success!', data.message, 'success');
+              fetchNotes(); // Refresh the notes list
+            } else {
+              Swal.fire('Error', data.message, 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Delete error:', error);
+            Swal.fire('Error', 'An error occurred while processing your request.', 'error');
+          });
+        }
+      });
+    }
+  </script>
+{% endblock %} 

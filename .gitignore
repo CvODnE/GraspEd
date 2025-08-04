@@ -1,0 +1,14 @@
+# Ignore Django secret files
+grasped/settings.py
+.env
+
+# Common Python ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+
+# Virtual environment
+venv/

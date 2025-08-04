@@ -1,0 +1,855 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .dashboard-hero { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-top: 3rem; animation: fadeInUp 1s; }
+    .dashboard-hero img { max-width: 320px; border-radius: 1.5rem; box-shadow: 0 8px 32px rgba(255,77,83,0.07); animation: float 3s infinite; }
+    .dashboard-content { max-width: 600px; }
+    .dashboard-form { background: #fff0f0; border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 24px rgba(230,57,70,0.08); margin-top: 2rem; animation: fadeIn 1.2s; }
+    .dashboard-form label { display: block; margin-bottom: 1rem; font-weight: 500; }
+    .dashboard-form input { width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #ff4d53; margin-top: 0.5rem; margin-bottom: 1rem; }
+    .dashboard-form button { margin-top: 1rem; }
+    .class-list { margin-top: 2rem; }
+    .class-card { background: #fff; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(230,57,70,0.08); padding: 1rem 1.5rem; margin-bottom: 1rem; animation: fadeInUp 0.8s; }
+    .class-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .class-name { font-weight: 600; color: #e63038; font-size: 1.1rem; }
+    .class-teacher { font-size: 0.9rem; color: #666; }
+    .class-stats { display: flex; gap: 1rem; font-size: 0.9rem; color: #666; }
+    .empty-state { text-align: center; padding: 2rem; color: #999; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .notes-section h3 { color: #e63038; display: flex; align-items: center; gap: 0.7rem; font-size: 1.7rem; font-weight: 800; }
+    .note-image-thumb { max-width: 120px; max-height: 90px; border-radius: 0.5rem; box-shadow: 0 2px 8px #e6303820; margin-top: 0.5rem; cursor: pointer; }
+    .uploaded-note-card { margin-bottom: 1.5rem; background: linear-gradient(135deg,#fff0f0 0%,#f9f9f9 100%); border-radius: 1rem; box-shadow: 0 4px 16px #e6303840; padding: 1.2rem 1.5rem; transition: box-shadow 0.3s, transform 0.3s; }
+    .uploaded-note-card:hover { box-shadow: 0 12px 32px #e6303840; transform: translateY(-2px) scale(1.025); }
+    .note-meta { font-size: 1.05rem; color: #e63038; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .note-text { margin: 0.7rem 0 0.3rem 0; color: #333; font-size: 1.08rem; display: flex; align-items: center; gap: 0.5rem; }
+    .note-file-link { color: #e63038; font-weight: 500; display: inline-block; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .join-class-header-btn { background: linear-gradient(90deg, #e63038 60%, #ff7e5f 100%); color: #fff; border-radius: 0.7rem; padding: 0.7rem 1.2rem; font-weight: 700; box-shadow: 0 2px 8px #e6303840; border: none; margin-left: 1.5rem; font-size: 1rem; transition: background 0.3s, box-shadow 0.3s, transform 0.2s; }
+    .join-class-header-btn:hover { background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%); box-shadow: 0 6px 24px #e6303840; transform: scale(1.03); }
+    .animated-logo {
+      animation: logo-bounce 2.2s cubic-bezier(.68,-0.55,.27,1.55) 0s 1;
+      transition: transform 0.35s cubic-bezier(.77,0,.18,1), filter 0.35s cubic-bezier(.77,0,.18,1);
+      cursor: pointer;
+    }
+    .animated-logo:hover {
+      animation: logo-hover-wiggle 0.7s cubic-bezier(.77,0,.18,1);
+      transform: scale(1.13) rotate(-4deg);
+      filter: brightness(1.18) saturate(1.15);
+    }
+    @keyframes logo-bounce {
+      0% { transform: scale(0.7) translateY(-40px); opacity: 0; }
+      60% { transform: scale(1.1) translateY(10px); opacity: 1; }
+      80% { transform: scale(0.95) translateY(-4px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    @keyframes logo-hover-wiggle {
+      0% { transform: scale(1) rotate(0deg); }
+      20% { transform: scale(1.13) rotate(-6deg) translateX(-2px); }
+      40% { transform: scale(1.13) rotate(4deg) translateX(2px); }
+      60% { transform: scale(1.13) rotate(-3deg) translateX(-1px); }
+      80% { transform: scale(1.13) rotate(2deg) translateX(1px); }
+      100% { transform: scale(1.13) rotate(-4deg) translateX(0); }
+    }
+    /* Sidebar hamburger hover effect */
+    #left-sidebar, #left-sidebar nav a {
+      font-family: 'Poppins', sans-serif !important;
+    }
+    #left-sidebar nav a {
+      transition: color 0.2s, background 0.2s;
+    }
+    #left-sidebar nav a:hover {
+      color: #e63038 !important;
+      background: #fff0f0;
+    }
+    #left-sidebar nav a:hover svg *,
+    #left-sidebar nav a:focus svg * {
+      stroke: #e63038 !important;
+    }
+  </style>
+</head>
+<body>
+  {% with active_page='dashboard' %}
+    {% include 'student_header_sidebar.html' %}
+  {% endwith %}
+
+  <main style="padding:2rem; max-width:1400px; margin:0 auto; position:relative;">
+    <!-- Reminders Sidebar -->
+    <div id="reminders-sidebar" style="position:fixed; top:110px; right:40px; width:320px; background:linear-gradient(135deg,#fffbe6 0%,#fff0f0 100%); border-radius:16px; box-shadow:0 4px 24px #ffecb3; padding:1.5rem 1.2rem; z-index:100;">
+      <h4 style="color:#ff4d53; margin-bottom:1.2rem; font-size:1.3rem; font-weight:800; letter-spacing:1px;">Reminders</h4>
+      {% if reminders %}
+        <ul style="list-style:none; padding:0; margin:0;">
+          {% for reminder in reminders %}
+            <li class="reminder-card" style="margin-bottom:1.1rem; background:#fff; border-radius:10px; padding:0.9rem 1.1rem; box-shadow:0 2px 8px #ffe08260; cursor:pointer; transition:box-shadow 0.2s, transform 0.2s; border-left:5px solid #ff4d53; position:relative;" onclick="showReminderPopup('{{ reminder.text|escapejs }}', '{{ reminder.remind_at|date:'Y-m-d H:i' }}')">
+              <div style="font-weight:700; color:#e63038; font-size:1.08rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ reminder.text }}</div>
+              <div style="color:#888; font-size:0.97em; margin-top:0.2rem;">at {{ reminder.remind_at|date:"Y-m-d H:i" }}</div>
+              <span class="reminder-action" style="position:absolute; top:10px; right:38px; z-index:2;" onclick="event.stopPropagation(); editReminder({{ reminder.id }}, '{{ reminder.text|escapejs }}', '{{ reminder.remind_at|date:'Y-m-d H:i' }}')" title="Edit"><svg width="18" height="18" fill="none" stroke="#e63038" stroke-width="2" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3.414a2 2 0 01.586-1.414z"/></svg></span>
+              <span class="reminder-action" style="position:absolute; top:10px; right:10px; z-index:2;" onclick="event.stopPropagation(); deleteReminder({{ reminder.id }})" title="Delete"><svg width="18" height="18" fill="none" stroke="#e63038" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M9 6v12a2 2 0 002 2h2a2 2 0 002-2V6m-6 0V4a2 2 0 012-2h2a2 2 0 012 2v2"/></svg></span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color:#aaa;">No reminders yet.</p>
+      {% endif %}
+    </div>
+    <!-- End Reminders Sidebar -->
+    <div class="welcome-section" style="text-align:left; margin-bottom:3rem; padding-left:2rem;">
+      <h1 id="welcome-heading" style="color:#e63038; margin-bottom:1rem; font-size:3.5rem; font-weight:800; text-shadow:2px 2px 4px rgba(230,57,70,0.1); display:flex; align-items:center; justify-content:flex-start; gap:1rem;">
+        <span style="width:3.5rem; height:3.5rem; display:inline-block; vertical-align:middle;">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="#e63038" stroke-width="2"/>
+            <path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#e63038" stroke-width="2"/>
+          </svg>
+        </span>
+        Student Dashboard
+      </h1>
+            </div>
+
+    <!-- Join Class Section - Only show if no classes joined -->
+    <div id="join-class-section" style="display:none;">
+      <div class="form-section" style="max-width:500px; margin:0 auto; background:linear-gradient(135deg,#fff0f0 0%,#f9f9f9 100%); padding:2rem; border-radius:1.5rem; box-shadow:0 8px 32px rgba(230,57,70,0.1);">
+        <h3 style="color:#e63038; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.7rem; font-size:1.8rem; font-weight:700;">
+          <span style="width:1.5rem; height:1.5rem; display:inline-block; vertical-align:middle;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Join Your First Class
+        </h3>
+        <div class="form-group">
+          <label for="classInput" style="display:block; margin-bottom:0.5rem; color:#333; font-weight:600;">Class Name:</label>
+          <input type="text" id="classInput" placeholder="e.g. Physics 101" style="width:100%; padding:1rem; border:2px solid #e63038; border-radius:0.8rem; font-size:1.1rem; margin-bottom:1rem;">
+          </div>
+        <div class="form-group">
+          <label for="passwordInput" style="display:block; margin-bottom:0.5rem; color:#333; font-weight:600;">Password:</label>
+          <input type="password" id="passwordInput" placeholder="Class password" style="width:100%; padding:1rem; border:2px solid #e63038; border-radius:0.8rem; font-size:1.1rem; margin-bottom:1.5rem;">
+        </div>
+        <button onclick="joinClass()" class="btn btn-primary" style="width:100%; padding:1.2rem; background:linear-gradient(90deg, #e63038 0%, #ff7e5f 100%); color:#fff; border:none; border-radius:1rem; font-size:1.2rem; font-weight:600; cursor:pointer; transition:all 0.3s; box-shadow:0 6px 20px rgba(230,57,70,0.3);" onmouseover="this.style.background='linear-gradient(90deg, #ff7e5f 0%, #e63038 100%)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 30px rgba(230,57,70,0.4)'" onmouseout="this.style.background='linear-gradient(90deg, #e63038 0%, #ff7e5f 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(230,57,70,0.3)'">
+          <span style="width:1.3rem; height:1.3rem; display:inline-block; vertical-align:middle; margin-right:0.5rem;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15C10.9391 15 9.92172 15.4214 9.17157 16.1716C8.42143 16.9217 8 17.9391 8 19V21" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </span>
+          Join Class
+        </button>
+      </div>
+    </div>
+
+    <!-- Notes Grid Section - Only show if classes joined -->
+    <div id="notes-section" style="display:none;">
+      <div id="notes-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
+        <!-- Notes will be loaded here -->
+      </div>
+      
+      <div id="no-notes-message" style="text-align:center; padding:4rem; color:#666; font-style:italic; display:none;">
+        <div style="margin-bottom:1.5rem;">
+          <span style="width:4rem; height:4rem; display:inline-block; vertical-align:middle;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 19.5V6.75C4 5.50736 5.00736 4.5 6.25 4.5H17.75C18.9926 4.5 20 5.50736 20 6.75V19.5" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 19.5H20" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 8.25H15" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+        <h3 style="color:#999; margin-bottom:1rem; font-size:1.5rem;">No Notes Available Yet</h3>
+        <p style="font-size:1.1rem;">Your teachers haven't uploaded any notes yet. Check back later!</p>
+      </div>
+    </div>
+  </main>
+  <!-- Sidebar and overlay -->
+  <div id="profile-sidebar-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:2000;"></div>
+  <aside id="profile-sidebar" style="position:fixed; top:0; right:-350px; width:320px; height:100vh; background:#fff; box-shadow:-4px 0 32px #e6303820; z-index:2100; transition:right 0.35s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column; align-items:center; padding:3rem 2rem 2rem 2rem;">
+    <span id="profile-photo-container" style="display:block; width:5.5rem; height:5.5rem; border-radius:50%; background:linear-gradient(135deg,#e63038,#ff7e5f); display:flex; align-items:center; justify-content:center; margin-bottom:2.5rem; overflow:hidden;">
+      {% if user.studentaccount.profile_photo %}
+        <img id="profile-photo-img" src="{{ user.studentaccount.profile_photo.url }}" alt="Profile Photo" style="width:100%; height:100%; object-fit:cover; border-radius:50%; border: 1px solid #ffb3b3; box-sizing: border-box;"/>
+      {% else %}
+        <svg id="profile-photo-img" width="88" height="88" viewBox="0 0 24 24" fill="none" style="display:block; border-radius:50%; background:linear-gradient(135deg,#e63038,#ff7e5f);" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="4" stroke="#fff" stroke-width="2.5"/>
+          <path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#fff" stroke-width="2.5"/>
+        </svg>
+      {% endif %}
+    </span>
+    <input type="file" id="profile-photo-input" accept="image/*" style="display:none;"/>
+    <button id="change-photo-btn" style="width:100%; padding:0.8rem 0; background:linear-gradient(90deg, #ff7e5f 0%, #e63038 100%); color:#fff; border:none; border-radius:1.2rem; font-size:1.1rem; font-weight:700; cursor:pointer; margin-bottom:1.5rem; margin-top:-1rem; transition:all 0.3s;">Change Profile Photo</button>
+    {% if user.studentaccount.classes.all %}
+      <button id="leave-class-btn" style="width:100%; padding:0.8rem 0; background:#fff; color:#e63038; border:1.5px solid #e63038; border-radius:1.2rem; font-size:1.1rem; font-weight:700; cursor:pointer; margin-bottom:1.5rem; margin-top:0.5rem; transition:all 0.3s;">Leave Class</button>
+    {% endif %}
+    <button onclick="confirmLogout()" style="width:100%; padding:1.2rem; background:linear-gradient(90deg, #e63038 0%, #ff7e5f 100%); color:#fff; border:none; border-radius:1.2rem; font-size:1.3rem; font-weight:700; cursor:pointer; box-shadow:0 6px 20px rgba(230,57,70,0.13); margin-top:2rem; display:flex; align-items:center; justify-content:center; gap:1rem; transition:all 0.3s; text-transform:uppercase; letter-spacing:1px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 17L21 12L16 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 12H9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 19C7.58 19 4 15.42 4 11C4 6.58 7.58 3 12 3C13.85 3 15.55 3.63 16.88 4.69" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Log Out
+    </button>
+  </aside>
+
+  <!-- Sidebar overlay for hamburger menu -->
+  <div id="left-sidebar-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:2100; transition:background 0.3s;"></div>
+  <!-- Left Sidebar -->
+  <aside id="left-sidebar" style="position:fixed; top:0; left:-270px; width:250px; height:100vh; background:#fff; box-shadow:4px 0 32px #e6303820; z-index:2200; transition:left 0.35s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column; padding:2.5rem 1.2rem 1.2rem 1.2rem;">
+    <div style="font-size:1.3rem; font-weight:800; color:#e63038; margin-bottom:2.5rem; display:flex; align-items:center; gap:0.7rem;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="20" height="20" rx="6" fill="#fff0f0" stroke="#e63038" stroke-width="2"/>
+        <path d="M8 12h8M8 16h8M8 8h8" stroke="#e63038" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Menu
+    </div>
+    <nav style="display:flex; flex-direction:column; gap:1.2rem;">
+      <a href="/student/dashboard/" style="display:flex; align-items:center; gap:1rem; color:{% if active_page == 'dashboard' %}#e63038{% else %}#666{% endif %}; font-weight:{% if active_page == 'dashboard' %}700{% else %}600{% endif %}; font-size:1.1rem; text-decoration:none; padding:0.7rem 1rem; border-radius:0.8rem; transition:background 0.2s;">
+        <span style="display:inline-flex; align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="7" width="18" height="13" rx="3" stroke="{% if active_page == 'dashboard' %}#e63038{% else %}#666{% endif %}" stroke-width="2"/>
+            <rect x="7" y="3" width="10" height="4" rx="2" stroke="{% if active_page == 'dashboard' %}#e63038{% else %}#666{% endif %}" stroke-width="2"/>
+          </svg>
+        </span>
+        Dashboard
+      </a>
+      <a href="/student/notes/" style="display:flex; align-items:center; gap:1rem; color:{% if active_page == 'notes' %}#e63038{% else %}#666{% endif %}; font-weight:{% if active_page == 'notes' %}700{% else %}600{% endif %}; font-size:1.1rem; text-decoration:none; padding:0.7rem 1rem; border-radius:0.8rem; transition:all 0.2s;">
+        <span style="display:inline-flex; align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="{% if active_page == 'notes' %}#e63038{% else %}#666{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 2V8H20" stroke="{% if active_page == 'notes' %}#e63038{% else %}#666{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 13H8" stroke="{% if active_page == 'notes' %}#e63038{% else %}#666{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 17H8" stroke="{% if active_page == 'notes' %}#e63038{% else %}#666{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 9H8" stroke="{% if active_page == 'notes' %}#e63038{% else %}#666{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        Notes
+      </a>
+      <a href="/student/attendance/" style="display:flex; align-items:center; gap:1rem; color:{% if active_page == 'attendance' %}#e63038{% else %}#666{% endif %}; font-weight:{% if active_page == 'attendance' %}700{% else %}600{% endif %}; font-size:1.1rem; text-decoration:none; padding:0.7rem 1rem; border-radius:0.8rem; transition:all 0.2s;">
+        <span style="display:inline-flex; align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="16" height="16" rx="4" stroke="{% if active_page == 'attendance' %}#e63038{% else %}#666{% endif %}" stroke-width="2"/>
+            <path d="M8 10h8M8 14h5" stroke="{% if active_page == 'attendance' %}#e63038{% else %}#666{% endif %}" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Attendance
+      </a>
+    </nav>
+  </aside>
+
+  <script>
+  // Logout confirmation function
+  function confirmLogout() {
+      Swal.fire({
+          title: 'Logout Confirmation',
+          text: 'Are you sure you want to logout?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#e63038',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Yes, Logout',
+          cancelButtonText: 'Cancel'
+      }).then((result) => {
+          if (result.isConfirmed) {
+              Swal.fire({
+                  title: 'Logging out...',
+                  text: 'You will be redirected to the home page.',
+                  icon: 'info',
+                  timer: 1500,
+                  showConfirmButton: false
+              }).then(async () => {
+                  try {
+                      const response = await fetch('/logout/', {
+                          method: 'GET',
+                          headers: {
+                              'X-Requested-With': 'XMLHttpRequest',
+                              'X-CSRFToken': getCookie('csrftoken'),
+                          }
+                      });
+                      
+                      if (response.ok) {
+                          const data = await response.json();
+                          if (data.status === 'success') {
+                              window.location.replace(data.redirect_url);
+                          } else {
+                              window.location.replace('/');
+                          }
+                      } else {
+                          window.location.replace('/');
+                      }
+                  } catch (error) {
+                      console.error('Logout error:', error);
+                      window.location.replace('/');
+                  }
+              });
+          }
+      });
+  }
+
+  // CSRF token helper
+  function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+
+// Check if student has joined any classes on page load
+document.addEventListener('DOMContentLoaded', function() {
+  checkStudentClasses();
+});
+
+async function checkStudentClasses() {
+  try {
+    const response = await fetch('/student/get_classes/');
+    const data = await response.json();
+    
+    const joinClassSection = document.getElementById('join-class-section');
+    const notesSection = document.getElementById('notes-section');
+    const welcomeHeading = document.getElementById('welcome-heading');
+    
+    if (data.status === 'success' && data.classes && data.classes.length > 0) {
+      // Student has joined classes - hide join form, show notes, update welcome
+      joinClassSection.style.display = 'none';
+      notesSection.style.display = 'block';
+      
+      // Update welcome heading to show student name and class name
+      const studentName = '{{ user.username }}';
+      const className = data.classes[0].name; // Use the first class name
+      welcomeHeading.innerHTML = `
+        <span style="font-size:3rem; color:#e63038; font-weight:700; text-align:left;">Welcome ${studentName} from ${className}!</span>
+      `;
+      
+      // Load notes for the dashboard
+      loadDashboardNotes();
+    } else {
+      // Student hasn't joined any classes - show join form, hide notes, keep generic welcome
+      joinClassSection.style.display = 'block';
+      notesSection.style.display = 'none';
+      
+      // Keep generic welcome heading
+      welcomeHeading.innerHTML = `
+        <span style="font-size:3rem; color:#e63038; font-weight:700; text-align:left;">Student Dashboard</span>
+      `;
+    }
+  } catch (error) {
+    console.error('Error checking student classes:', error);
+    // If there's an error, show the join form as a fallback
+    document.getElementById('join-class-section').style.display = 'block';
+    document.getElementById('notes-section').style.display = 'none';
+  }
+}
+
+async function loadDashboardNotes() {
+  try {
+    const response = await fetch('/student/get_notes/');
+    const data = await response.json();
+    
+    const notesGrid = document.getElementById('notes-grid');
+    const noNotesMessage = document.getElementById('no-notes-message');
+    
+    if (data.status === 'success' && data.notes && data.notes.length > 0) {
+      // Show notes grid, hide no notes message
+      notesGrid.style.display = 'grid';
+      noNotesMessage.style.display = 'none';
+      
+      // Group notes by class
+      const notesByClass = {};
+      data.notes.forEach(note => {
+        const className = note.class_name || 'Unknown Class';
+        if (!notesByClass[className]) {
+          notesByClass[className] = [];
+        }
+        notesByClass[className].push(note);
+      });
+      
+      // Render notes organized by class
+      let gridHTML = '';
+      
+      Object.keys(notesByClass).forEach(className => {
+        const classNotes = notesByClass[className];
+        
+        // Notes for this class
+        classNotes.forEach(note => {
+          // Check if note is new (within 24 hours)
+          const noteDate = new Date(note.created_at);
+          const now = new Date();
+          const hoursDiff = (now - noteDate) / (1000 * 60 * 60);
+          const isNew = hoursDiff < 24;
+          
+          let filePreview = '';
+          let fileLink = '';
+          
+          if (note.file_url && note.file_name) {
+            if (/\.(jpg|jpeg|png|gif)$/i.test(note.file_name)) {
+              filePreview = `
+                <div style="margin-top:1.5rem;">
+                  <img src='${note.file_url}' alt='Note Image' style='width:100%; max-height:300px; object-fit:cover; border-radius:1.2rem; cursor:pointer; box-shadow:0 8px 25px rgba(0,0,0,0.2); transition:all 0.4s;' onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 12px 35px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.2)'" onclick='showImageModal("${note.file_url}")'>
+                </div>
+              `;
+            } else {
+              fileLink = `
+                <div style="margin-top:1.5rem;">
+                  <a href='${note.file_url}' target='_blank' style='color:#e63038; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:1rem; padding:1.2rem; background:linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius:1.2rem; transition:all 0.4s; border:3px solid transparent; box-shadow:0 6px 18px rgba(0,0,0,0.1);' onmouseover="this.style.background='linear-gradient(135deg, #e63038, #ff7e5f)'; this.style.color='#fff'; this.style.borderColor='#e63038'; this.style.transform='translateY(-3px) scale(1.02)'" onmouseout="this.style.background='linear-gradient(135deg, #f8f9fa, #e9ecef)'; this.style.color='#e63038'; this.style.borderColor='transparent'; this.style.transform='translateY(0) scale(1)'">
+                    <span style='width:1.8rem; height:1.8rem; display:inline-block;'>
+                      <svg width='28' height='28' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                        <rect x='4' y='4' width='16' height='16' rx='2' stroke='currentColor' stroke-width='2'/>
+                        <path d='M8 8H16V16H8V8Z' fill='currentColor' fill-opacity='0.15'/>
+                      </svg>
+                    </span>
+                    ${note.file_name}
+                  </a>
+                </div>
+              `;
+            }
+          }
+          
+          gridHTML += `
+            <div style='background:linear-gradient(145deg,#ffffff 0%,#f8f9fa 50%,#e9ecef 100%); border-radius:1.5rem; box-shadow:0 8px 25px rgba(230,57,70,0.2), 0 4px 15px rgba(0,0,0,0.1); padding:1.5rem; transition:all 0.5s; border:3px solid rgba(230,57,70,0.1); position:relative;' onmouseover="this.style.transform='translateY(-8px) scale(1.02)'; this.style.boxShadow='0 15px 40px rgba(230,57,70,0.35), 0 6px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 8px 25px rgba(230,57,70,0.2), 0 4px 15px rgba(0,0,0,0.1)'">
+              <div style='display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1.5rem;'>
+                <div style='display:flex; align-items:center; gap:1rem; flex:1;'>
+                  <div>
+                    <div style='color:#e63038; font-weight:900; font-size:1.3rem; margin-bottom:0.3rem; text-shadow:1px 1px 2px rgba(230,57,70,0.1);'>${note.name || ''}</div>
+                    <div style='color:#666; font-size:0.9rem; font-weight:600; background:rgba(230,57,70,0.1); padding:0.3rem 0.8rem; border-radius:0.8rem; display:inline-block;'>${note.uploaded_at || note.created_at || ''}</div>
+                  </div>
+                </div>
+                ${isNew ? `
+                  <div style="background:linear-gradient(45deg, #ff6b6b, #ff8e8e); color:#fff; padding:0.5rem 1rem; border-radius:1rem; font-weight:900; font-size:0.9rem; box-shadow:0 6px 15px rgba(255,107,107,0.6); animation:pulse 2s infinite; text-transform:uppercase; letter-spacing:0.5px; border:2px solid #fff; margin-left:0.8rem;">
+                    NEW
+                  </div>
+                ` : ''}
+              </div>
+              <div style='color:#333; font-size:1.1rem; line-height:1.6; margin-bottom:1.5rem; padding:1.5rem; background:linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,250,0.95)); border-radius:1rem; border-left:4px solid #e63038; box-shadow:0 4px 15px rgba(0,0,0,0.1), inset 0 1px 3px rgba(255,255,255,0.8); backdrop-filter:blur(15px); position:relative; cursor:pointer; display:flex; flex-direction:column;'>
+                <div style="position:relative; z-index:1; max-height:1.4em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${note.text}</div>
+              </div>
+              <div style="margin-top:0.7rem; display:flex; justify-content:flex-end;">
+                <button style="background:linear-gradient(135deg, #e63038, #ff7e5f); color:#fff; border:none; padding:0.5rem 1.2rem; border-radius:0.8rem; font-size:0.95rem; font-weight:700; box-shadow:0 3px 10px rgba(230,57,70,0.13); cursor:pointer; transition:all 0.3s; text-transform:uppercase; letter-spacing:0.5px;" onclick='showTextModal("${note.teacher || 'Unknown Teacher'}", "${note.text.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}", "${note.uploaded_at || note.created_at || ''}")'>Read More</button>
+              </div>
+              
+              ${filePreview}
+              ${fileLink}
+            </div>
+          `;
+        });
+      });
+      
+      notesGrid.innerHTML = gridHTML;
+      
+      // Add CSS animation for pulse effect
+      if (!document.getElementById('pulse-animation')) {
+        const style = document.createElement('style');
+        style.id = 'pulse-animation';
+        style.textContent = `
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // Add lightbox modal for image preview
+      if (!document.getElementById('note-image-modal')) {
+        const modal = document.createElement('div');
+        modal.id = 'note-image-modal';
+        modal.style = 'display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center;';
+        modal.innerHTML = `
+          <img id='note-image-modal-img' style='max-width:90vw; max-height:80vh; border-radius:2rem; box-shadow:0 16px 50px #0008;'>
+          <span style='position:absolute;top:2rem;right:2rem;font-size:4rem;color:#fff;cursor:pointer;' onclick='document.getElementById("note-image-modal").style.display="none"'>&times;</span>
+        `;
+        document.body.appendChild(modal);
+      }
+      window.showImageModal = function(url) {
+        document.getElementById('note-image-modal-img').src = url;
+        document.getElementById('note-image-modal').style.display = 'flex';
+      };
+      
+      // Add text modal for full note content
+      if (!document.getElementById('note-text-modal')) {
+        const textModal = document.createElement('div');
+        textModal.id = 'note-text-modal';
+        textModal.style = 'display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; padding:2rem;';
+        textModal.innerHTML = `
+          <div style="background:linear-gradient(145deg,#ffffff 0%,#f8f9fa 100%); border-radius:2rem; padding:3rem; max-width:600px; width:100%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); position:relative;">
+            <div id="text-modal-header" style="margin-bottom:2rem; padding-bottom:1rem; border-bottom:3px solid #e63038;">
+              <h3 id="text-modal-teacher" style="color:#e63038; font-size:1.8rem; font-weight:800; margin-bottom:0.5rem;"></h3>
+              <p id="text-modal-date" style="color:#666; font-size:1.1rem; font-weight:600;"></p>
+            </div>
+            <div id="text-modal-content" style="color:#333; font-size:1.3rem; line-height:1.8; margin-bottom:2rem;"></div>
+            <button onclick='document.getElementById("note-text-modal").style.display="none"' style="background:linear-gradient(135deg, #e63038, #ff7e5f); color:#fff; border:none; padding:1rem 2rem; border-radius:1rem; font-size:1.1rem; font-weight:600; cursor:pointer; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Close</button>
+            <span style='position:absolute;top:1.5rem;right:1.5rem;font-size:2rem;color:#e63038;cursor:pointer;' onclick='document.getElementById("note-text-modal").style.display="none"'>&times;</span>
+          </div>
+        `;
+        document.body.appendChild(textModal);
+      }
+      window.showTextModal = function(teacher, text, date) {
+        document.getElementById('text-modal-teacher').textContent = teacher;
+        document.getElementById('text-modal-date').textContent = date;
+        document.getElementById('text-modal-content').textContent = text;
+        document.getElementById('note-text-modal').style.display = 'flex';
+      };
+      
+    } else {
+      // Show no notes message, hide grid
+      notesGrid.style.display = 'none';
+      noNotesMessage.style.display = 'block';
+    }
+  } catch (error) {
+    console.error('Error loading notes:', error);
+    document.getElementById('notes-grid').innerHTML = '<div style="text-align:center; color:#e63038; padding:3rem; font-size:1.2rem;">Error loading notes. Please refresh the page.</div>';
+  }
+}
+
+async function joinClass() {
+  const classInput = document.getElementById('classInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const class_name = classInput.value.trim();
+  const password = passwordInput.value.trim();
+  
+  if (!class_name || !password) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Please enter both class name and password.',
+      confirmButtonColor: '#e63038'
+    });
+    return;
+  }
+  
+  try {
+    const response = await fetch('/student/join_class/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ class_name, password })
+    });
+    
+    const data = await response.json();
+    
+    if (data.status === 'success') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: data.message,
+        confirmButtonColor: '#e63038'
+      }).then(() => {
+        classInput.value = '';
+        passwordInput.value = '';
+        // Recheck classes and update UI
+        checkStudentClasses();
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.message,
+        confirmButtonColor: '#e63038'
+      });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An error occurred while joining the class.',
+      confirmButtonColor: '#e63038'
+    });
+  }
+}
+
+document.getElementById('profile-btn').onclick = function() {
+  document.getElementById('profile-sidebar').style.right = '0';
+  document.getElementById('profile-sidebar-overlay').style.display = 'block';
+};
+document.getElementById('profile-sidebar-overlay').onclick = function() {
+  document.getElementById('profile-sidebar').style.right = '-350px';
+  document.getElementById('profile-sidebar-overlay').style.display = 'none';
+};
+
+document.getElementById('change-photo-btn').onclick = function() {
+  document.getElementById('profile-photo-input').click();
+};
+document.getElementById('profile-photo-input').onchange = function(e) {
+  const file = e.target.files[0];
+  console.log('File selected:', file);
+  if (file) {
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      console.log('File preview loaded');
+      const container = document.getElementById('profile-photo-container');
+      let img = document.getElementById('profile-photo-img');
+      // If the current profile-photo-img is an SVG, replace it with an <img>
+      if (img && img.tagName.toLowerCase() === 'svg') {
+        img.remove();
+        img = document.createElement('img');
+        img.id = 'profile-photo-img';
+        img.alt = 'Profile Photo';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+        container.appendChild(img);
+      }
+      if (img) {
+        img.src = evt.target.result;
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload to backend
+    const formData = new FormData();
+    formData.append('profile_photo', file);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    console.log('FormData created, uploading...');
+    
+    fetch('/student/upload_profile_photo/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Upload response:', data);
+      if (data.status === 'success') {
+        // Show success message
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Profile photo uploaded successfully.',
+          confirmButtonColor: '#e63038',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        // Show error message
+        Swal.fire({
+          icon: 'error',
+          title: 'Upload Failed',
+          text: data.message || 'Failed to upload profile photo.',
+          confirmButtonColor: '#e63038'
+        });
+        // Revert to default avatar if upload failed
+        revertToDefaultAvatar();
+      }
+    })
+    .catch(error => {
+      console.error('Upload error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'An error occurred while uploading the profile photo.',
+        confirmButtonColor: '#e63038'
+      });
+      // Revert to default avatar if upload failed
+      revertToDefaultAvatar();
+      });
+    }
+  };
+
+// Helper function to revert to default avatar
+function revertToDefaultAvatar() {
+  const container = document.getElementById('profile-photo-container');
+  let img = document.getElementById('profile-photo-img');
+  if (img && img.tagName.toLowerCase() === 'img') {
+    img.remove();
+    const svg = document.createElement('svg');
+    svg.id = 'profile-photo-img';
+    svg.setAttribute('width', '88');
+    svg.setAttribute('height', '88');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.style.display = 'block';
+    svg.style.borderRadius = '50%';
+    svg.style.background = 'linear-gradient(135deg,#e63038,#ff7e5f)';
+    svg.innerHTML = `
+      <circle cx="12" cy="8" r="4" stroke="#fff" stroke-width="2.5"/>
+      <path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="#fff" stroke-width="2.5"/>
+    `;
+    container.appendChild(svg);
+  }
+}
+
+// Hamburger menu logic (unified)
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const leftSidebar = document.getElementById('left-sidebar');
+const leftSidebarOverlay = document.getElementById('left-sidebar-overlay');
+hamburgerBtn.onclick = function() {
+  leftSidebar.style.left = '0';
+  leftSidebarOverlay.style.display = 'block';
+  leftSidebar.style.transition = 'left 0.35s cubic-bezier(.77,0,.18,1)';
+};
+leftSidebarOverlay.onclick = function() {
+  leftSidebar.style.left = '-270px';
+  leftSidebarOverlay.style.display = 'none';
+};
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    leftSidebar.style.left = '-270px';
+    leftSidebarOverlay.style.display = 'none';
+  }
+});
+
+document.getElementById('leave-class-btn')?.addEventListener('click', function() {
+  Swal.fire({
+    title: 'Leave Class?',
+    text: 'Are you sure you want to leave this class? You will lose access to its notes and attendance.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#e63038',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, Leave',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('/student/leave_class/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          Swal.fire({
+            icon: 'success',
+            title: 'Left Class',
+            text: data.message,
+            confirmButtonColor: '#e63038',
+            timer: 1800,
+            showConfirmButton: false
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message,
+            confirmButtonColor: '#e63038'
+          });
+        }
+      });
+    }
+  });
+});
+
+function showReminderPopup(text, time) {
+  Swal.fire({
+    title: 'Reminder',
+    html: `<div style='font-size:1.15rem; color:#e63038; font-weight:700; margin-bottom:0.7rem;'>${text}</div><div style='color:#888;'>at ${time}</div>`,
+    icon: 'info',
+    confirmButtonColor: '#ff4d53',
+    background: '#fffbe6',
+    customClass: { popup: 'reminder-popup' }
+  });
+}
+
+function deleteReminder(reminderId) {
+  Swal.fire({
+    title: 'Delete Reminder?',
+    text: 'Are you sure you want to delete this reminder?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#e63038',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, Delete',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/reminders/delete/${reminderId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          Swal.fire('Deleted!', data.message, 'success').then(() => { window.location.reload(); });
+        } else {
+          Swal.fire('Error', data.message, 'error');
+        }
+      });
+    }
+  });
+}
+function editReminder(reminderId, text, time) {
+  Swal.fire({
+    title: 'Edit Reminder',
+    html: `<input id='edit-reminder-text' class='swal2-input' value='${text}' placeholder='Reminder text'><input id='edit-reminder-time' class='swal2-input' value='${time}' placeholder='YYYY-MM-DD HH:mm'>`,
+    showCancelButton: true,
+    confirmButtonText: 'Save',
+    cancelButtonText: 'Cancel',
+    preConfirm: () => {
+      return {
+        text: document.getElementById('edit-reminder-text').value,
+        remind_at: document.getElementById('edit-reminder-time').value
+      };
+    },
+    confirmButtonColor: '#e63038',
+    background: '#fffbe6',
+  }).then((result) => {
+    if (result.isConfirmed && result.value) {
+      fetch(`/reminders/edit/${reminderId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(result.value)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          Swal.fire('Updated!', data.message, 'success').then(() => { window.location.reload(); });
+        } else {
+          Swal.fire('Error', data.message, 'error');
+        }
+      });
+    }
+  });
+}
+// Notification popup for reminders due in the next 10 minutes
+window.addEventListener('DOMContentLoaded', function() {
+  const now = new Date();
+  const reminders = [
+    {% for reminder in reminders %}
+      { id: {{ reminder.id }}, text: `{{ reminder.text|escapejs }}`, remind_at: `{{ reminder.remind_at|date:'Y-m-d H:i' }}` },
+    {% endfor %}
+  ];
+  reminders.forEach(reminder => {
+    const remindTime = new Date(reminder.remind_at.replace(' ', 'T'));
+    const diff = (remindTime - now) / (1000 * 60); // minutes
+    if (diff >= 0 && diff <= 10) {
+      setTimeout(() => {
+        Swal.fire({
+          title: 'Reminder',
+          html: `<div style='font-size:1.15rem; color:#e63038; font-weight:700; margin-bottom:0.7rem;'>${reminder.text}</div><div style='color:#888;'>at ${reminder.remind_at}</div>`,
+          icon: 'info',
+          confirmButtonColor: '#ff4d53',
+          background: '#fffbe6',
+          customClass: { popup: 'reminder-popup' }
+        });
+      }, diff * 60 * 1000);
+    }
+  });
+});
+  </script>
+{% endblock %}
