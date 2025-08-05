@@ -20,6 +20,24 @@
                 <a href="#" class="btn btn-login">Login</a>
                 <a href="#" class="btn btn-signup">Sign Up</a>
             </div>
+            <!-- Hamburger Button -->
+            <button id="hamburger-btn" class="hamburger" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav">
+              <div class="hamburger-inner">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </button>
+            <!-- Mobile Nav Sidebar -->
+            <div id="mobile-nav" class="mobile-nav">
+              <div class="mobile-nav-links">
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+                <a href="#" class="btn btn-login">Login</a>
+                <a href="#" class="btn btn-signup">Sign Up</a>
+              </div>
+            </div>
         </nav>
     </header>
 
@@ -143,6 +161,168 @@
         </div>
     </div>
 
+    <style>
+    /* Hamburger/close button always top right, above sidebar */
+    .hamburger {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      width: 52px;
+      height: 52px;
+      background: #fff;
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 2px 12px rgba(230,57,70,0.10);
+      cursor: pointer;
+      z-index: 12001;
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      transition: box-shadow 0.2s, background 0.2s;
+      padding: 0;
+    }
+    .hamburger:hover, .hamburger.active {
+      box-shadow: 0 4px 24px #e6303840;
+      background: #ffe5e5;
+    }
+    .hamburger-inner {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hamburger span {
+      position: absolute;
+      left: 0;
+      width: 28px;
+      height: 4px;
+      background: #e63038;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+    .hamburger span:nth-child(1) {
+      top: 0;
+    }
+    .hamburger span:nth-child(2) {
+      top: 12px;
+    }
+    .hamburger span:nth-child(3) {
+      top: 24px;
+    }
+    .hamburger.active span:nth-child(1) {
+      top: 12px;
+      transform: rotate(45deg);
+    }
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active span:nth-child(3) {
+      top: 12px;
+      transform: rotate(-45deg);
+    }
+
+    /* Sidebar animation and style */
+    .mobile-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 340px;
+      max-width: 90vw;
+      height: 90vh;
+      min-height: 340px;
+      background: linear-gradient(135deg, #fff0f0 0%, #ffe5e5 100%);
+      z-index: 11000;
+      box-shadow: -8px 0 32px 0 rgba(230,57,70,0.18), 0 8px 32px 0 rgba(230,57,70,0.10);
+      border-top-left-radius: 2.2rem;
+      border-bottom-left-radius: 2.2rem;
+      transform: translateX(120%) scale(0.98);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.5s cubic-bezier(.77,0,.18,1), opacity 0.3s;
+    }
+    .mobile-nav.open {
+      transform: translateX(0) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.2rem;
+      width: 100%;
+      margin-top: 2rem;
+    }
+    .mobile-nav-links a {
+      font-size: 1.7rem;
+      color: #e63038;
+      text-decoration: none;
+      font-weight: 800;
+      text-align: center;
+      width: auto;
+      min-width: 120px;
+      max-width: 90%;
+      opacity: 0;
+      transform: translateY(40px) scale(0.95);
+      transition: opacity 0.5s, transform 0.5s;
+      border-radius: 1.2rem;
+      padding: 0.7rem 1.5rem;
+      background: none;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
+    }
+    .mobile-nav.open .mobile-nav-links a {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .mobile-nav.open .mobile-nav-links a:nth-child(1) { transition-delay: 0.18s; }
+    .mobile-nav.open .mobile-nav-links a:nth-child(2) { transition-delay: 0.28s; }
+    .mobile-nav.open .mobile-nav-links a:nth-child(3) { transition-delay: 0.38s; }
+    .mobile-nav.open .mobile-nav-links a:nth-child(4) { transition-delay: 0.48s; }
+    .mobile-nav.open .mobile-nav-links a:nth-child(5) { transition-delay: 0.58s; }
+    .mobile-nav-links a.btn {
+      background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+      color: #fff;
+      font-weight: 900;
+      margin-top: 0.5rem;
+      box-shadow: 0 4px 24px #e6303840;
+      border: none;
+      font-size: 1.3rem;
+      padding: 1rem 2.5rem;
+      border-radius: 2rem;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+    }
+    .mobile-nav-links a.btn:hover {
+      background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%);
+      color: #fff;
+      transform: scale(1.07);
+    }
+    /* Responsive: hide nav-links, show hamburger on small screens */
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none !important;
+      }
+      .hamburger {
+        display: flex;
+      }
+      .mobile-nav {
+        height: 100vh;
+        min-height: 0;
+        border-radius: 0;
+        border-top-left-radius: 2.2rem;
+        border-bottom-left-radius: 2.2rem;
+      }
+    }
+    </style>
+
     <script>
     let selectedUserType = null;
 
@@ -179,6 +359,35 @@
         const signupSidebar = document.getElementById('signup-sidebar');
         if (e.target === signupSidebar) {
             signupSidebar.classList.remove('open');
+        }
+    });
+
+    // Mobile sidebar button event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add event listeners for mobile sidebar login button
+        const mobileLoginBtn = document.querySelector('.mobile-nav-links .btn-login');
+        if (mobileLoginBtn) {
+            mobileLoginBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('login-sidebar').classList.add('open');
+                // Close mobile sidebar when opening login
+                document.getElementById('mobile-nav').classList.remove('open');
+                document.getElementById('hamburger-btn').classList.remove('active');
+                document.getElementById('hamburger-btn').setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        // Add event listeners for mobile sidebar signup button
+        const mobileSignupBtn = document.querySelector('.mobile-nav-links .btn-signup');
+        if (mobileSignupBtn) {
+            mobileSignupBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('signup-sidebar').classList.add('open');
+                // Close mobile sidebar when opening signup
+                document.getElementById('mobile-nav').classList.remove('open');
+                document.getElementById('hamburger-btn').classList.remove('active');
+                document.getElementById('hamburger-btn').setAttribute('aria-expanded', 'false');
+            });
         }
     });
 
@@ -376,6 +585,26 @@
             }
         }
         return cookieValue;
+    }
+    </script>
+    <script>
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const mobileNav = document.getElementById('mobile-nav');
+
+    if (hamburgerBtn && mobileNav) {
+      hamburgerBtn.addEventListener('click', function() {
+        const isOpen = mobileNav.classList.toggle('open');
+        hamburgerBtn.classList.toggle('active');
+        this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+      // Close sidebar when clicking a link
+      mobileNav.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') {
+          mobileNav.classList.remove('open');
+          hamburgerBtn.classList.remove('active');
+          hamburgerBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
     }
     </script>
 {% endblock %}

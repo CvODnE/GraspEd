@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GraspEd</title>
+    <link rel="icon" type="image/png" href="{% static 'images/GraspEd-Logo-image.png' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
 </head>
@@ -20,7 +21,7 @@
     {% endblock %}
     <!-- Agentic AI Chatbot Bubble and Window -->
     <div id="ai-chat-bubble" style="display: flex; align-items: center; justify-content: center; position: fixed; bottom: 32px; right: 32px; z-index: 9999; cursor: pointer; background: #ff4d53; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 16px rgba(230,57,70,0.18); transition: box-shadow 0.3s;">
-      <span style="color: #fff; font-size: 2rem;">💬</span>
+      <img src="{% static 'images/chatbot-speech-bubble.png' %}" alt="Chatbot" style="width: 2.2rem; height: 2.2rem; display: block;" />
     </div>
     <div id="ai-chat-window" style="display: none; position: fixed; bottom: 100px; right: 32px; width: 350px; max-width: 95vw; height: 480px; background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 10000; flex-direction: column; overflow: hidden;">
       <div style="background: #ff4d53; color: #fff; padding: 1rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
