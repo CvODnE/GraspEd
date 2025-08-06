@@ -586,6 +586,47 @@
         }
         return cookieValue;
     }
+   
+   // Floating label functionality
+   function handleFloatingLabels() {
+       const inputs = document.querySelectorAll('.input-group input');
+       
+       inputs.forEach(input => {
+           // Check if input has value on page load
+           if (input.value.trim() !== '') {
+               input.classList.add('filled');
+           }
+           
+           // Handle focus event
+           input.addEventListener('focus', function() {
+               this.classList.add('focused');
+           });
+           
+           // Handle blur event
+           input.addEventListener('blur', function() {
+               this.classList.remove('focused');
+               if (this.value.trim() !== '') {
+                   this.classList.add('filled');
+               } else {
+                   this.classList.remove('filled');
+               }
+           });
+           
+           // Handle input event (for real-time updates)
+           input.addEventListener('input', function() {
+               if (this.value.trim() !== '') {
+                   this.classList.add('filled');
+               } else {
+                   this.classList.remove('filled');
+               }
+           });
+       });
+   }
+   
+   // Initialize floating labels when DOM is loaded
+   document.addEventListener('DOMContentLoaded', function() {
+       handleFloatingLabels();
+   });
     </script>
     <script>
     const hamburgerBtn = document.getElementById('hamburger-btn');

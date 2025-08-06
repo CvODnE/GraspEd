@@ -595,6 +595,26 @@ body {
     padding: 0 0.3rem;
     border-radius: 0.3rem;
 }
+/* When input is focused but empty, keep label at top */
+.input-group input:focus + label {
+    top: -0.7rem;
+    left: 0.8rem;
+    font-size: 0.92rem;
+    color: #ff4d53;
+    background: #fff0f0;
+    padding: 0 0.3rem;
+    border-radius: 0.3rem;
+}
+/* When input has content, keep label at top even when not focused */
+.input-group input.filled + label {
+    top: -0.7rem;
+    left: 0.8rem;
+    font-size: 0.92rem;
+    color: #e63038;
+    background: #fff0f0;
+    padding: 0 0.3rem;
+    border-radius: 0.3rem;
+}
 /* Position the show/hide password icon */
 .toggle-password {
     position: absolute;
