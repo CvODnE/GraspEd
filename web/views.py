@@ -81,6 +81,9 @@ def get_local_chatbot():
 def index(request):
     return render(request, "index.html")
 
+def community_view(request):
+    return render(request, "community.html")
+
 def signup_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)

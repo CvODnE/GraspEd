@@ -1,0 +1,1105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<header style="width:100%; background:#fff; box-shadow:0 2px 12px rgba(230,57,70,0.07); display:flex; align-items:center; justify-content:space-between; padding:1.2rem 2.5rem; position:sticky; top:0; z-index:100;">
+  <div style="display:flex; align-items:center; gap:1.2rem;">
+    <img src="{% static 'images/GraspEd-logo-text.png' %}" alt="GraspEd Logo" class="animated-logo" style="height:2.5rem; width:auto; display:block;"/>
+        </div>
+  <div class="top-tabs" id="header-tabs-community">
+    {% if user.is_authenticated and user.teacheraccount %}
+      <a href="/teacher/dashboard/" class="tab-link">
+        <img class="tab-icon active" src="{% static 'images/blackboard-active.png' %}" alt="Classroom Active"/>
+        <img class="tab-icon inactive" src="{% static 'images/blackboard-inactive.png' %}" alt="Classroom Inactive"/>
+        <span>Classroom</span>
+        <span class="pulse"></span>
+      </a>
+    {% else %}
+      <a href="/student/dashboard/" class="tab-link">
+        <img class="tab-icon active" src="{% static 'images/blackboard-active.png' %}" alt="Classroom Active"/>
+        <img class="tab-icon inactive" src="{% static 'images/blackboard-inactive.png' %}" alt="Classroom Inactive"/>
+        <span>Classroom</span>
+        <span class="pulse"></span>
+      </a>
+    {% endif %}
+    <a href="{% url 'web:community' %}" class="tab-link active">
+      <img class="tab-icon active" src="{% static 'images/group-active.png' %}" alt="Community Active"/>
+      <img class="tab-icon inactive" src="{% static 'images/group-inactive.png' %}" alt="Community Inactive"/>
+                <span>Community</span>
+      <span class="pulse"></span>
+            </a>
+    <span class="active-indicator"></span>
+          </div>
+  <a href="javascript:history.back()" aria-label="Go back" style="display:inline-flex; align-items:center; gap:0.5rem; background:#fff0f0; color:#e63038; font-weight:700; border:none; border-radius:1.1rem; padding:0.6rem 1.1rem; box-shadow:0 2px 8px #e6303820; text-decoration:none;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M15 18l-6-6 6-6" stroke="#e63038" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Back
+  </a>
+</header>
+
+<main class="community-main">
+    <div class="community-header">
+        <div class="community-title">
+            <img src="{% static 'images/group.png' %}" alt="Community" class="community-icon">
+            <h1>GraspEd Community</h1>
+        </div>
+        <p class="community-subtitle">Connect, collaborate, and learn together with teachers and students</p>
+    </div>
+
+    <div class="community-container">
+        <div class="community-sidebar">
+            <div class="sidebar-section">
+                <h3>Categories</h3>
+                <ul class="category-list">
+                    <li class="category-item active" data-category="all">
+                        <span class="category-icon">📚</span>
+                        All Discussions
+                    </li>
+                    <li class="category-item" data-category="general">
+                        <span class="category-icon">💬</span>
+                        General Discussion
+                    </li>
+                    <li class="category-item" data-category="academic">
+                        <span class="category-icon">🎓</span>
+                        Academic Help
+                    </li>
+                    <li class="category-item" data-category="questions">
+                        <span class="category-icon">❓</span>
+                        Questions & Doubts
+                    </li>
+                    <li class="category-item" data-category="resources">
+                        <span class="category-icon">📖</span>
+                        Study Resources
+                    </li>
+                    <li class="category-item" data-category="projects">
+                        <span class="category-icon">🚀</span>
+                        Group Projects
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Quick Actions</h3>
+                <button class="btn btn-primary new-discussion-btn" id="newDiscussionBtn">
+                    <span class="btn-icon">✏️</span>
+                    Start New Discussion
+                </button>
+            </div>
+        </div>
+
+        <div class="community-content">
+            <div class="content-header">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search discussions..." id="searchDiscussions">
+                    <button class="search-btn">🔍</button>
+                </div>
+                <div class="sort-options">
+                    <select id="sortDiscussions">
+                        <option value="recent">Most Recent</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="active">Most Active</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="discussions-list" id="discussionsList">
+                <!-- Sample discussions will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- New Discussion Modal -->
+    <div id="newDiscussionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Start New Discussion</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="newDiscussionForm">
+                <div class="form-group">
+                    <label for="discussionTitle">Title</label>
+                    <input type="text" id="discussionTitle" name="title" required placeholder="Enter discussion title">
+                </div>
+                <div class="form-group">
+                    <label for="discussionCategory">Category</label>
+                    <select id="discussionCategory" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="general">General Discussion</option>
+                        <option value="academic">Academic Help</option>
+                        <option value="questions">Questions & Doubts</option>
+                        <option value="resources">Study Resources</option>
+                        <option value="projects">Group Projects</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="discussionContent">Content</label>
+                    <textarea id="discussionContent" name="content" required placeholder="Share your thoughts, questions, or ideas..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelDiscussion">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Discussion</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Sidebar -->
+    <div id="login-sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <span class="close-btn-circle" id="close-login-sidebar"><span class="close-btn">&times;</span></span>
+            <h2>Login to Your Account</h2>
+            <form id="login-form" style="margin-top:2rem;">
+                <div class="input-group">
+                    <input type="text" id="login-username" name="username" required>
+                    <label for="login-username">Username</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" name="password" required>
+                    <label for="login-password">Password</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Sidebar -->
+    <div id="signup-sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <span class="close-btn-circle" id="close-sidebar"><span class="close-btn">&times;</span></span>
+            <h2 id="sidebar-title">Create an Account</h2>
+            <div class="account-type-tabs" id="account-type-tabs">
+                <button class="tab-btn teacher-btn">Create Teacher Account</button>
+                <button class="tab-btn student-btn">Create Student Account</button>
+            </div>
+            <form id="signup-form" style="display:none; margin-top:2rem;">
+                <button type="button" id="back-to-tabs" style="margin-bottom:1.2rem;display:none;" class="btn btn-secondary back-icon-btn" aria-label="Back">&#8592;</button>
+                <div class="input-group">
+                    <input type="text" id="signup-username" name="username" required>
+                    <label for="signup-username">Username</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="signup-password" name="password" required>
+                    <label for="signup-password">Password</label>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="signup-school" name="school_name" required>
+                    <label for="signup-school">School Name</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Create Account</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<style>
+/* Header Tabs for Community page */
+.top-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fff;
+    padding: 0.25rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 2px 12px rgba(230,57,70,0.10);
+    position: relative;
+    isolation: isolate;
+}
+.top-tabs .tab-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1.1rem;
+    border-radius: 1.2rem;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: #e63038;
+    transition: color 0.2s, transform 0.2s, box-shadow 0.2s, background 0.2s;
+    will-change: transform;
+    z-index: 1;
+}
+.top-tabs .tab-link:hover {
+    transform: translateY(-1px) scale(1.01);
+}
+.top-tabs .tab-link.active {
+    color: #fff !important;
+    background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+    box-shadow: 0 4px 18px rgba(230,57,70,0.35);
+}
+.top-tabs .tab-link .pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.2rem;
+    box-shadow: 0 0 0 0 rgba(230,57,70,0.25);
+    animation: tabPulse 2.2s infinite;
+    pointer-events: none;
+    opacity: 0;
+}
+.top-tabs .tab-link.active .pulse { opacity: 1; }
+/* sliding active background */
+.top-tabs .active-indicator {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    width: 50%;
+    background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 18px rgba(230,57,70,0.35);
+    transition: transform 240ms cubic-bezier(.22,.61,.36,1), width 240ms ease;
+    z-index: 0;
+}
+/* icon swap animations */
+.top-tabs .tab-icon { width: 22px; height: 22px; margin-right: 0.55rem; transition: opacity 180ms ease, transform 180ms ease; }
+.top-tabs .tab-icon.inactive { opacity: 0.7; filter: saturate(0.4) brightness(1.15); }
+.top-tabs .tab-link.active .tab-icon.inactive { opacity: 0; transform: scale(0.9); }
+.top-tabs .tab-link:not(.active) .tab-icon.active { opacity: 0; transform: scale(0.9); }
+.top-tabs .tab-link.active .tab-icon.active { opacity: 1; transform: scale(1); }
+@keyframes tabPulse {
+    0% { box-shadow: 0 0 0 0 rgba(230,57,70,0.25); }
+    70% { box-shadow: 0 0 0 14px rgba(230,57,70,0); }
+    100% { box-shadow: 0 0 0 0 rgba(230,57,70,0); }
+}
+/* Community Page Styles */
+.community-main {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding-top: 80px;
+}
+
+.community-header {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, #e63038 0%, #ff7e5f 100%);
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.community-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.community-icon {
+    width: 48px;
+    height: 48px;
+    filter: brightness(0) invert(1);
+}
+
+.community-title h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.community-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.community-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.community-sidebar {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.sidebar-section {
+    margin-bottom: 2rem;
+}
+
+.sidebar-section h3 {
+    color: #e63038;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.category-item:hover {
+    background: #fff0f0;
+    color: #e63038;
+}
+
+.category-item.active {
+    background: #e63038;
+    color: white;
+}
+
+.category-icon {
+    font-size: 1.2rem;
+}
+
+.new-discussion-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    font-size: 1.1rem;
+}
+
+.community-content {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-bar input {
+    border: none;
+    background: none;
+    outline: none;
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 1rem;
+}
+
+.search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #e9ecef;
+}
+
+.sort-options select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.discussions-list {
+    min-height: 400px;
+}
+
+/* Sample Discussion Cards */
+.discussion-card {
+    background: #f8f9fa;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #e63038;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.discussion-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.discussion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.discussion-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0;
+    flex: 1;
+}
+
+.discussion-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.discussion-category {
+    background: #e63038;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.discussion-content {
+    color: #495057;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.discussion-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.discussion-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 20000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #e63038;
+}
+
+.close-modal {
+    font-size: 2rem;
+    cursor: pointer;
+    color: #6c757d;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #e63038;
+}
+
+#newDiscussionForm {
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #e63038;
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .community-container {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+    
+    .community-sidebar {
+        order: 2;
+    }
+    
+    .community-content {
+        order: 1;
+    }
+    
+    .content-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-bar {
+        max-width: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .community-header {
+        padding: 2rem 1rem;
+    }
+    
+    .community-title h1 {
+        font-size: 2rem;
+    }
+    
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+/* Community icon styles */
+.nav-community-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #e63038;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 0.8rem;
+}
+
+.nav-community-link:hover,
+.nav-community-link.active {
+    background: #fff0f0;
+    transform: translateY(-2px);
+}
+
+.nav-community-icon {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+}
+
+/* Hamburger/close button always top right, above sidebar */
+.hamburger {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  width: 52px;
+  height: 52px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 12px rgba(230,57,70,0.10);
+  cursor: pointer;
+  z-index: 12001;
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  transition: box-shadow 0.2s, background 0.2s;
+  padding: 0;
+}
+.hamburger:hover, .hamburger.active {
+  box-shadow: 0 4px 24px #e6303840;
+  background: #ffe5e5;
+}
+.hamburger-inner {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hamburger span {
+  position: absolute;
+  left: 0;
+  width: 28px;
+  height: 4px;
+  background: #e63038;
+  border-radius: 2px;
+  transition: 0.3s;
+}
+.hamburger span:nth-child(1) {
+  top: 0;
+}
+.hamburger span:nth-child(2) {
+  top: 12px;
+}
+.hamburger span:nth-child(3) {
+  top: 24px;
+}
+.hamburger.active span:nth-child(1) {
+  top: 12px;
+  transform: rotate(45deg);
+}
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.active span:nth-child(3) {
+  top: 12px;
+  transform: rotate(-45deg);
+}
+
+/* Sidebar animation and style */
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 340px;
+  max-width: 90vw;
+  height: 90vh;
+  min-height: 340px;
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe5e5 100%);
+  z-index: 11000;
+  box-shadow: -8px 0 32px 0 rgba(230,57,70,0.18), 0 8px 32px 0 rgba(230,57,70,0.10);
+  border-top-left-radius: 2.2rem;
+  border-bottom-left-radius: 2.2rem;
+  transform: translateX(120%) scale(0.98);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(.77,0,.18,1), opacity 0.3s;
+}
+.mobile-nav.open {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.2rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+.mobile-nav-links a {
+  font-size: 1.7rem;
+  color: #e63038;
+  text-decoration: none;
+  font-weight: 800;
+  text-align: center;
+  width: auto;
+  min-width: 120px;
+  max-width: 90%;
+  opacity: 0;
+  transform: translateY(40px) scale(0.95);
+  transition: opacity 0.5s, transform 0.5s;
+  border-radius: 1.2rem;
+  padding: 0.7rem 1.5rem;
+  background: none;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+.mobile-nav.open .mobile-nav-links a {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.mobile-nav.open .mobile-nav-links a:nth-child(1) { transition-delay: 0.18s; }
+.mobile-nav.open .mobile-nav-links a:nth-child(2) { transition-delay: 0.28s; }
+.mobile-nav.open .mobile-nav-links a:nth-child(3) { transition-delay: 0.38s; }
+.mobile-nav.open .mobile-nav-links a:nth-child(4) { transition-delay: 0.48s; }
+.mobile-nav.open .mobile-nav-links a:nth-child(5) { transition-delay: 0.58s; }
+.mobile-nav-links a.btn {
+  background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+  color: #fff;
+  font-weight: 900;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 24px #e6303840;
+  border: none;
+  font-size: 1.3rem;
+  padding: 1rem 2.5rem;
+  border-radius: 2rem;
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+.mobile-nav-links a.btn:hover {
+  background: linear-gradient(90deg, #ff7e5f 0%, #e63038 100%);
+  color: #fff;
+  transform: scale(1.07);
+}
+/* Responsive: hide nav-links, show hamburger on small screens */
+@media (max-width: 900px) {
+  .nav-links {
+    display: none !important;
+  }
+  .hamburger {
+    display: flex;
+  }
+  .mobile-nav {
+    height: 100vh;
+    min-height: 0;
+    border-radius: 0;
+    border-top-left-radius: 2.2rem;
+    border-bottom-left-radius: 2.2rem;
+  }
+}
+</style>
+
+<script>
+// Sample discussions data
+const sampleDiscussions = [
+    {
+        id: 1,
+        title: "How to solve quadratic equations?",
+        content: "I'm having trouble understanding the quadratic formula. Can someone explain it step by step?",
+        category: "academic",
+        author: "Student123",
+        replies: 8,
+        views: 45,
+        timestamp: "2 hours ago"
+    },
+    {
+        id: 2,
+        title: "Best study techniques for exams",
+        content: "What are your most effective study methods? I'm preparing for finals and need some tips!",
+        category: "resources",
+        author: "StudyHelper",
+        replies: 15,
+        views: 89,
+        timestamp: "1 day ago"
+    },
+    {
+        id: 3,
+        title: "Group project collaboration ideas",
+        content: "Looking for creative ways to collaborate on group projects. Any suggestions?",
+        category: "projects",
+        author: "TeamLeader",
+        replies: 12,
+        views: 67,
+        timestamp: "3 days ago"
+    },
+    {
+        id: 4,
+        title: "Understanding Shakespeare's language",
+        content: "Can someone help me understand the old English used in Shakespeare's plays?",
+        category: "questions",
+        author: "LiteratureFan",
+        replies: 6,
+        views: 34,
+        timestamp: "4 days ago"
+    }
+];
+
+// Initialize community page
+document.addEventListener('DOMContentLoaded', function() {
+    loadDiscussions();
+    setupEventListeners();
+});
+
+function loadDiscussions() {
+    const discussionsList = document.getElementById('discussionsList');
+    discussionsList.innerHTML = '';
+    
+    sampleDiscussions.forEach(discussion => {
+        const discussionCard = createDiscussionCard(discussion);
+        discussionsList.appendChild(discussionCard);
+    });
+}
+
+function createDiscussionCard(discussion) {
+    const card = document.createElement('div');
+    card.className = 'discussion-card';
+    
+    card.innerHTML = `
+        <div class="discussion-header">
+            <h3 class="discussion-title">${discussion.title}</h3>
+            <div class="discussion-meta">
+                <span class="discussion-category">${getCategoryName(discussion.category)}</span>
+                <span>${discussion.timestamp}</span>
+            </div>
+        </div>
+        <div class="discussion-content">${discussion.content}</div>
+        <div class="discussion-footer">
+            <span>By ${discussion.author}</span>
+            <div class="discussion-stats">
+                <span class="stat-item">💬 ${discussion.replies}</span>
+                <span class="stat-item">👁️ ${discussion.views}</span>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+function getCategoryName(category) {
+    const categories = {
+        'general': 'General Discussion',
+        'academic': 'Academic Help',
+        'questions': 'Questions & Doubts',
+        'resources': 'Study Resources',
+        'projects': 'Group Projects'
+    };
+    return categories[category] || category;
+}
+
+function setupEventListeners() {
+    // Category filtering
+    document.querySelectorAll('.category-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.category-item').forEach(cat => cat.classList.remove('active'));
+            this.classList.add('active');
+            filterDiscussions(this.dataset.category);
+        });
+    });
+    
+    // New discussion modal
+    document.getElementById('newDiscussionBtn').addEventListener('click', function() {
+        document.getElementById('newDiscussionModal').style.display = 'block';
+    });
+    
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('newDiscussionModal').style.display = 'none';
+    });
+    
+    document.getElementById('cancelDiscussion').addEventListener('click', function() {
+        document.getElementById('newDiscussionModal').style.display = 'none';
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('newDiscussionModal');
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Form submission
+    document.getElementById('newDiscussionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Handle form submission here
+        alert('Discussion created successfully! (This is a demo)');
+        document.getElementById('newDiscussionModal').style.display = 'none';
+        this.reset();
+    });
+    
+    // Search functionality
+    document.getElementById('searchDiscussions').addEventListener('input', function() {
+        searchDiscussions(this.value);
+    });
+    
+    // Sort functionality
+    document.getElementById('sortDiscussions').addEventListener('change', function() {
+        sortDiscussions(this.value);
+        loadDiscussions();
+    });
+}
+
+function filterDiscussions(category) {
+    if (category === 'all') {
+        loadDiscussions();
+        return;
+    }
+    
+    const filtered = sampleDiscussions.filter(d => d.category === category);
+    const discussionsList = document.getElementById('discussionsList');
+    discussionsList.innerHTML = '';
+    
+    filtered.forEach(discussion => {
+        const discussionCard = createDiscussionCard(discussion);
+        discussionsList.appendChild(discussionCard);
+    });
+}
+
+function searchDiscussions(query) {
+    if (!query.trim()) {
+        loadDiscussions();
+        return;
+    }
+    
+    const filtered = sampleDiscussions.filter(d => 
+        d.title.toLowerCase().includes(query.toLowerCase()) ||
+        d.content.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    const discussionsList = document.getElementById('discussionsList');
+    discussionsList.innerHTML = '';
+    
+    filtered.forEach(discussion => {
+        const discussionCard = createDiscussionCard(discussion);
+        discussionsList.appendChild(discussionCard);
+    });
+}
+
+function sortDiscussions(sortBy) {
+    switch(sortBy) {
+        case 'recent':
+            sampleDiscussions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            break;
+        case 'popular':
+            sampleDiscussions.sort((a, b) => b.replies - a.replies);
+            break;
+        case 'active':
+            sampleDiscussions.sort((a, b) => b.views - a.views);
+            break;
+    }
+}
+
+// Basic sidebar functionality
+document.querySelector('.btn-login').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('login-sidebar').classList.add('open');
+});
+
+document.getElementById('close-login-sidebar').addEventListener('click', function() {
+    document.getElementById('login-sidebar').classList.remove('open');
+});
+
+document.querySelectorAll('.btn-signup').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('signup-sidebar').classList.add('open');
+    });
+});
+
+document.getElementById('close-sidebar').addEventListener('click', function() {
+    document.getElementById('signup-sidebar').classList.remove('open');
+});
+
+// Mobile sidebar functionality
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const mobileNav = document.getElementById('mobile-nav');
+
+if (hamburgerBtn && mobileNav) {
+    hamburgerBtn.addEventListener('click', function() {
+        const isOpen = mobileNav.classList.toggle('open');
+        hamburgerBtn.classList.toggle('active');
+        this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    
+    mobileNav.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') {
+            mobileNav.classList.remove('open');
+            hamburgerBtn.classList.remove('active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+</script>
+<script>
+(function initHeaderTabsCommunity() {
+  const tabs = document.getElementById('header-tabs-community');
+  if (!tabs) return;
+  const links = Array.from(tabs.querySelectorAll('.tab-link'));
+  const indicator = tabs.querySelector('.active-indicator');
+  function positionIndicator(target) {
+    const tabsRect = tabs.getBoundingClientRect();
+    const rect = target.getBoundingClientRect();
+    const left = rect.left - tabsRect.left + 4;
+    const width = rect.width - 8;
+    indicator.style.transform = `translateX(${left}px)`;
+    indicator.style.width = `${width}px`;
+  }
+  const active = tabs.querySelector('.tab-link.active') || links[0];
+  positionIndicator(active);
+  window.addEventListener('resize', () => positionIndicator(tabs.querySelector('.tab-link.active') || links[0]));
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      if (link.classList.contains('active')) return;
+      e.preventDefault();
+      links.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      positionIndicator(link);
+      setTimeout(() => { window.location.href = link.href; }, 240);
+    });
+  });
+})();
+</script>
+{% endblock %}

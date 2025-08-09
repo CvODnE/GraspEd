@@ -74,6 +74,73 @@
     transform: scale(0.97);
     box-shadow: 0 2px 8px #e6303840;
   }
+  /* Header tabs */
+  .top-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fff;
+    padding: 0.25rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 2px 12px rgba(230,57,70,0.10);
+    position: relative;
+    isolation: isolate;
+  }
+  .top-tabs .tab-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1.1rem;
+    border-radius: 1.2rem;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: #e63038;
+    transition: color 0.2s, transform 0.2s, box-shadow 0.2s, background 0.2s;
+    will-change: transform;
+    z-index: 1;
+  }
+  .top-tabs .tab-link:hover {
+    transform: translateY(-1px);
+  }
+  .top-tabs .tab-link.active {
+    color: #fff !important;
+    background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+    box-shadow: 0 4px 18px rgba(230,57,70,0.35);
+  }
+  .top-tabs .tab-link .pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.2rem;
+    box-shadow: 0 0 0 0 rgba(230,57,70,0.25);
+    animation: tabPulse 2.2s infinite;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .top-tabs .tab-link.active .pulse { opacity: 1; }
+  .top-tabs .active-indicator {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    width: 50%;
+    background: linear-gradient(90deg, #e63038 0%, #ff7e5f 100%);
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 18px rgba(230,57,70,0.35);
+    transition: transform 240ms cubic-bezier(.22,.61,.36,1), width 240ms ease;
+    z-index: 0;
+  }
+  .top-tabs .tab-icon { width: 22px; height: 22px; margin-right: 0.55rem; transition: opacity 180ms ease, transform 180ms ease; }
+  .top-tabs .tab-icon.inactive { opacity: 0.7; filter: saturate(0.4) brightness(1.15); }
+  .top-tabs .tab-link.active .tab-icon.inactive { opacity: 0; transform: scale(0.9); }
+  .top-tabs .tab-link:not(.active) .tab-icon.active { opacity: 0; transform: scale(0.9); }
+  .top-tabs .tab-link.active .tab-icon.active { opacity: 1; transform: scale(1); }
+  @keyframes tabPulse {
+    0% { box-shadow: 0 0 0 0 rgba(230,57,70,0.25); }
+    70% { box-shadow: 0 0 0 14px rgba(230,57,70,0); }
+    100% { box-shadow: 0 0 0 0 rgba(230,57,70,0); }
+  }
 </style>
 {% load static %}
 <!-- Header -->
@@ -89,6 +156,25 @@
     </button>
     <img src="/static/images/GraspEd-logo-text.png" alt="GraspEd Logo" class="animated-logo" style="height:2.5rem; width:auto; display:block;"/>
   </div>
+  <div class="top-tabs" id="header-tabs-student">
+    <a href="/student/dashboard/" class="tab-link {% if active_page != 'community' %}active{% endif %}">
+      <img class="tab-icon active" src="{% static 'images/blackboard-active.png' %}" alt="Classroom Active"/>
+      <img class="tab-icon inactive" src="{% static 'images/blackboard-inactive.png' %}" alt="Classroom Inactive"/>
+      <span>Classroom</span>
+      <span class="pulse"></span>
+    </a>
+    <a href="{% url 'web:community' %}" class="tab-link {% if active_page == 'community' %}active{% endif %}">
+      <img class="tab-icon active" src="{% static 'images/group-active.png' %}" alt="Community Active"/>
+      <img class="tab-icon inactive" src="{% static 'images/group-inactive.png' %}" alt="Community Inactive"/>
+      <span>Community</span>
+      <span class="pulse"></span>
+    </a>
+    <span class="active-indicator"></span>
+  </div>
+  <div style="display:flex; align-items:center; gap:1rem;">
+    <a href="{% url 'web:community' %}" id="community-link" style="display:inline-flex; align-items:center; justify-content:center; width:2.6rem; height:2.6rem; border-radius:50%; background:#fff0f0; box-shadow:0 2px 8px #e6303820;">
+      <img src="{% static 'images/group.png' %}" alt="Community" style="width:1.4rem; height:1.4rem;"/>
+    </a>
   <button id="profile-btn" style="background:none; border:none; cursor:pointer; outline:none; padding:0; margin:0;">
     <span style="display:inline-block; width:2.8rem; height:2.8rem; border-radius:50%; background:linear-gradient(135deg,#e63038,#ff7e5f); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px #e6303820;">
       {% if user.studentaccount.profile_photo %}
@@ -101,6 +187,7 @@
       {% endif %}
     </span>
   </button>
+  </div>
 </header>
 <!-- Sidebar overlay for hamburger menu -->
 <div id="left-sidebar-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:2100;"></div>
@@ -275,4 +362,32 @@ function getCookie(name) {
   }
   return cookieValue;
 }
+  // Header tabs animation and delayed navigation
+  (function initHeaderTabs() {
+    const tabs = document.getElementById('header-tabs-student');
+    if (!tabs) return;
+    const links = Array.from(tabs.querySelectorAll('.tab-link'));
+    const indicator = tabs.querySelector('.active-indicator');
+    function positionIndicator(target) {
+      const tabsRect = tabs.getBoundingClientRect();
+      const rect = target.getBoundingClientRect();
+      const left = rect.left - tabsRect.left + 4; // align with indicator top/left
+      const width = rect.width - 8;
+      indicator.style.transform = `translateX(${left}px)`;
+      indicator.style.width = `${width}px`;
+    }
+    const active = tabs.querySelector('.tab-link.active') || links[0];
+    positionIndicator(active);
+    window.addEventListener('resize', () => positionIndicator(tabs.querySelector('.tab-link.active') || links[0]));
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        if (link.classList.contains('active')) return;
+        e.preventDefault();
+        links.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        positionIndicator(link);
+        setTimeout(() => { window.location.href = link.href; }, 240);
+      });
+    });
+  })();
 </script> 

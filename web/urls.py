@@ -7,6 +7,7 @@ app_name = "web"
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("community/", views.community_view, name="community"),
     path("signup/", views.signup_view, name="signup"),
     path("login/", views.login_view, name="login"),
     path("student/dashboard/", views.student_dashboard_view, name="student_dashboard"),
